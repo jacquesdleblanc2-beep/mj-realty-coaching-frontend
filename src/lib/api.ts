@@ -159,6 +159,12 @@ export const getCoachByEmail = (email: string) =>
 export const getCoachRealtors = (coachId: string) =>
   apiFetch<Realtor[]>(`/api/coaches/${coachId}/realtors`);
 
+export const assignRealtorToCoach = (coachId: string, realtorId: string) =>
+  apiFetch<Coach>(`/api/coaches/${coachId}/realtors/${realtorId}`, { method: "POST" });
+
+export const removeRealtorFromCoach = (coachId: string, realtorId: string) =>
+  apiFetch<Coach>(`/api/coaches/${coachId}/realtors/${realtorId}`, { method: "DELETE" });
+
 // ── Realtors ───────────────────────────────────────────────────────────────────
 
 export const getRealtors = () =>
