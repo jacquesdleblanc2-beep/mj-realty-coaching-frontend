@@ -1,5 +1,5 @@
-import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import NextAuth from "next-auth"
+import GoogleProvider from "next-auth/providers/google"
 
 const handler = NextAuth({
   providers: [
@@ -9,16 +9,13 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, token }) {
-      return session;
-    },
-    async signIn({ user }) {
-      return true;
+    async session({ session }) {
+      return session
     },
   },
   pages: {
     signIn: "/",
   },
-});
+})
 
-export { handler as GET, handler as POST };
+export { handler as GET, handler as POST }
