@@ -9,18 +9,14 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user }) {
-      // Allow ALL google sign-ins — routing happens
-      // client-side based on email.
-      // Do NOT call the backend API here — it causes
-      // silent failures if the API is unreachable.
+    async signIn() {
       return true
     },
     async session({ session }) {
       return session
     },
-    async redirect({ url, baseUrl }) {
-      return baseUrl
+    async redirect({ baseUrl }) {
+      return baseUrl + "/dashboard"
     },
   },
   pages: {

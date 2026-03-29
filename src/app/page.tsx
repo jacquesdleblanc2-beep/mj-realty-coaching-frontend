@@ -1,41 +1,37 @@
-"use client";
+"use client"
 
-// src/app/page.tsx — MJ Realty landing / login page
+import { signIn, useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
-import { useState } from "react";
-import { signIn, useSession } from "next-auth/react";
-import { useAuthRedirect } from "@/lib/auth";
+export default function Home() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [code,  setCode]  = useState("")
+  const [error, setError] = useState("")
 
-const INVITE_CODE = process.env.NEXT_PUBLIC_INVITE_CODE ?? "";
+  const INVITE_CODE  = process.env.NEXT_PUBLIC_INVITE_CODE
+  const MARTIN_EMAIL = process.env.NEXT_PUBLIC_MARTIN_EMAIL
 
-export default function LandingPage() {
-  const { status } = useSession();
-  useAuthRedirect();
-
-  const [code,  setCode]  = useState("");
-  const [error, setError] = useState("");
-
-  function handleSignIn() {
-    // Gate disabled when no invite code is configured (dev mode)
-    if (INVITE_CODE && code.trim() !== INVITE_CODE) {
-      if (!code.trim()) {
-        setError("This platform is currently invite-only. Enter your invite code to continue.");
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.email) {
+      if (session.user.email === MARTIN_EMAIL) {
+        router.push("/coach")
       } else {
-        setError("Incorrect invite code. Please try again.");
+        router.push("/dashboard")
       }
-      return;
     }
-    setError("");
-    signIn("google");
+  }, [session, status, router, MARTIN_EMAIL])
+
+  const handleSignIn = () => {
+    if (INVITE_CODE && code !== INVITE_CODE) {
+      setError("Invalid invite code.")
+      return
+    }
+    signIn("google")
   }
 
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-teal-50 flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
-      </div>
-    );
-  }
+  if (status === "loading") return null
 
   return (
     <div className="min-h-screen bg-teal-50 flex flex-col items-center justify-center px-4">
@@ -67,23 +63,21 @@ export default function LandingPage() {
         Sign in with Google
       </button>
 
-      {/* Invite code field — only shown when NEXT_PUBLIC_INVITE_CODE is set */}
+      {/* Invite code — only shown when NEXT_PUBLIC_INVITE_CODE is set */}
       {INVITE_CODE && (
         <div className="flex flex-col items-center gap-1.5 mb-6 w-full max-w-xs">
           <label className="text-xs text-teal-400 self-start">Have an invite code?</label>
           <input
             type="text"
             value={code}
-            onChange={(e) => { setCode(e.target.value); setError(""); }}
+            onChange={(e) => { setCode(e.target.value); setError("") }}
             onKeyDown={(e) => e.key === "Enter" && handleSignIn()}
             placeholder="Enter code"
             className="w-full bg-white border border-teal-200 focus:border-teal-400 rounded-xl
                        px-4 py-2.5 text-sm text-teal-800 focus:outline-none transition-colors
                        placeholder:text-teal-300"
           />
-          {error && (
-            <p className="text-xs text-red-500 self-start">{error}</p>
-          )}
+          {error && <p className="text-xs text-red-500 self-start">{error}</p>}
         </div>
       )}
 
@@ -103,7 +97,7 @@ export default function LandingPage() {
         © {new Date().getFullYear()} MJ Realty Coaching Platform
       </p>
     </div>
-  );
+  )
 }
 
 function GoogleIcon() {
@@ -126,5 +120,5 @@ function GoogleIcon() {
         fill="#EA4335"
       />
     </svg>
-  );
+  )
 }
