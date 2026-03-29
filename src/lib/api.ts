@@ -141,6 +141,52 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// ── Admin (super-admin) ────────────────────────────────────────────────────────
+
+export interface AdminCoach {
+  id:          string;
+  name:        string;
+  email:       string;
+  active:      boolean;
+  realtors:    Realtor[];
+}
+
+export interface AdminRealtor {
+  id:         string;
+  name:       string;
+  email:      string;
+  active:     boolean;
+  coach_id:   string | null;
+  coach_name: string | null;
+}
+
+export const getAdminCoaches = () =>
+  apiFetch<AdminCoach[]>("/api/admin/coaches");
+
+export const getAdminRealtors = () =>
+  apiFetch<AdminRealtor[]>("/api/admin/realtors");
+
+export const createAdminCoach = (data: { name: string; email: string }) =>
+  apiFetch<AdminCoach>("/api/admin/coaches", { method: "POST", body: JSON.stringify(data) });
+
+export const deleteAdminCoach = (id: string) =>
+  apiFetch<{ status: string }>(`/api/admin/coaches/${id}`, { method: "DELETE" });
+
+export const updateAdminCoach = (id: string, data: Partial<{ name: string; email: string; active: boolean }>) =>
+  apiFetch<AdminCoach>(`/api/admin/coaches/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+
+export const createAdminRealtor = (data: { name: string; email: string; coach_id?: string }) =>
+  apiFetch<AdminRealtor>("/api/admin/realtors", { method: "POST", body: JSON.stringify(data) });
+
+export const deleteAdminRealtor = (id: string) =>
+  apiFetch<{ status: string }>(`/api/admin/realtors/${id}`, { method: "DELETE" });
+
+export const updateAdminRealtor = (id: string, data: Partial<{ name: string; email: string; active: boolean }>) =>
+  apiFetch<AdminRealtor>(`/api/admin/realtors/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+
+export const assignAdminRealtor = (id: string, coach_id: string) =>
+  apiFetch<AdminRealtor>(`/api/admin/realtors/${id}/assign`, { method: "POST", body: JSON.stringify({ coach_id }) });
+
 // ── Coaches ────────────────────────────────────────────────────────────────────
 
 export interface Coach {

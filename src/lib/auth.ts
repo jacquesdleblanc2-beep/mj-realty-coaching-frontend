@@ -16,7 +16,13 @@ export function useAuthRedirect() {
   useEffect(() => {
     if (status !== "authenticated") return;
 
-    const email = session?.user?.email ?? "";
+    const email       = session?.user?.email ?? "";
+    const SUPER_ADMIN = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL;
+
+    if (SUPER_ADMIN && email.toLowerCase() === SUPER_ADMIN.toLowerCase()) {
+      router.push("/admin");
+      return;
+    }
 
     getCoachByEmail(email)
       .then((coach) => {
