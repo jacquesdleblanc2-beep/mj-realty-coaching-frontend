@@ -141,6 +141,24 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// ── Coaches ────────────────────────────────────────────────────────────────────
+
+export interface Coach {
+  id:          string;
+  name:        string;
+  email:       string;
+  realtor_ids: string[];
+}
+
+export const getCoaches = () =>
+  apiFetch<Coach[]>("/api/coaches");
+
+export const getCoachByEmail = (email: string) =>
+  apiFetch<Coach | null>(`/api/coaches/by-email/${encodeURIComponent(email)}`);
+
+export const getCoachRealtors = (coachId: string) =>
+  apiFetch<Realtor[]>(`/api/coaches/${coachId}/realtors`);
+
 // ── Realtors ───────────────────────────────────────────────────────────────────
 
 export const getRealtors = () =>

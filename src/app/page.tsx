@@ -1,29 +1,18 @@
 "use client"
 
 import { signIn, useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { useAuthRedirect } from "@/lib/auth"
 
 export default function Home() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
+  const { status } = useSession()
   const [code,      setCode]      = useState("")
   const [codeError, setCodeError] = useState("")
   const [signingIn, setSigningIn] = useState(false)
 
-  const INVITE_CODE  = process.env.NEXT_PUBLIC_INVITE_CODE
-  const MARTIN_EMAIL = process.env.NEXT_PUBLIC_MARTIN_EMAIL
+  const INVITE_CODE = process.env.NEXT_PUBLIC_INVITE_CODE
 
-  // Once session confirms, route to the right page
-  useEffect(() => {
-    if (status === "authenticated" && session?.user?.email) {
-      if (session.user.email === MARTIN_EMAIL) {
-        router.push("/coach")
-      } else {
-        router.push("/dashboard")
-      }
-    }
-  }, [session, status, router, MARTIN_EMAIL])
+  useAuthRedirect()
 
   const handleSignIn = () => {
     if (INVITE_CODE && code !== INVITE_CODE) {
@@ -108,10 +97,6 @@ export default function Home() {
       <div className="flex gap-4 text-sm text-teal-400">
         <a href="/dashboard" className="hover:text-teal-600 transition-colors underline underline-offset-2">
           Realtor demo
-        </a>
-        <span>·</span>
-        <a href="/coach" className="hover:text-teal-600 transition-colors underline underline-offset-2">
-          Coach demo
         </a>
       </div>
 
