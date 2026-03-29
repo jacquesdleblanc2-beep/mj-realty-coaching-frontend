@@ -1,6 +1,6 @@
 "use client";
 
-// src/app/coach/page.tsx — Martin's coach dashboard
+// src/app/coach/page.tsx — Coach dashboard (multi-coach aware)
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -8,9 +8,7 @@ import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { MetricCard } from "@/components/metric-card";
 import { RealtorTable } from "@/components/realtor-table";
-import { getRealtors, getPipelineStatus, runSundayReminder, Realtor, PipelineStatus } from "@/lib/api";
-
-const MARTIN_EMAIL = process.env.NEXT_PUBLIC_MARTIN_EMAIL;
+import { getCoachByEmail, getCoachRealtors, getPipelineStatus, runSundayReminder, Realtor, PipelineStatus } from "@/lib/api";
 
 function weekLabel(): string {
   const today  = new Date();
@@ -35,32 +33,66 @@ function Skeleton({ className = "" }: { className?: string }) {
 export default function CoachPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [realtors, setRealtors]   = useState<Realtor[]>([]);
+  const [realtors, setRealtors]             = useState<Realtor[]>([]);
   const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus | null>(null);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState<string | null>(null);
-  const [reminderMsg, setReminder] = useState<string | null>(null);
+  const [loading, setLoading]               = useState(true);
+  const [error, setError]                   = useState<string | null>(null);
+  const [reminderMsg, setReminder]          = useState<string | null>(null);
+  const [coachName, setCoachName]           = useState<string>("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/");
       return;
     }
-    if (status === "authenticated" && session?.user?.email !== MARTIN_EMAIL) {
-      router.push("/dashboard");
-    }
-  }, [status, session, router]);
-
-  useEffect(() => {
     if (status !== "authenticated") return;
-    Promise.all([getRealtors(), getPipelineStatus()])
-      .then(([rs, ps]) => {
+
+    const email = session?.user?.email ?? "";
+
+    async function loadCoach() {
+      // Resolve coachId — prefer sessionStorage, fall back to API lookup
+      let coachId = sessionStorage.getItem("coachId") ?? "";
+
+      if (!coachId) {
+        try {
+          const coach = await getCoachByEmail(email);
+          if (!coach) { router.push("/"); return; }
+          coachId = coach.id;
+          setCoachName(coach.name);
+          sessionStorage.setItem("coachId", coachId);
+        } catch {
+          router.push("/");
+          return;
+        }
+      }
+
+      // If we got coachId from sessionStorage, still fetch the name
+      if (!coachName) {
+        try {
+          const coach = await getCoachByEmail(email);
+          if (coach) setCoachName(coach.name);
+        } catch {
+          // Non-fatal — name will fall back to session name
+        }
+      }
+
+      try {
+        const [rs, ps] = await Promise.all([
+          getCoachRealtors(coachId),
+          getPipelineStatus(),
+        ]);
         setRealtors(rs);
         setPipelineStatus(ps);
-      })
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [status]);
+      } catch (e) {
+        setError((e as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadCoach();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, session]);
 
   if (status === "loading") {
     return (
@@ -77,8 +109,8 @@ export default function CoachPage() {
   const weekScores  = realtors
     .map((r) => r.score_history.at(-1)?.percentage ?? null)
     .filter((p): p is number => p !== null);
-  const teamAvg   = avg(weekScores);
-  const submitted = weekScores.length;
+  const teamAvg    = avg(weekScores);
+  const submitted  = weekScores.length;
   const topRealtor = realtors.reduce<{ name: string; pct: number } | null>((best, r) => {
     const pct = r.score_history.at(-1)?.percentage ?? 0;
     return !best || pct > best.pct ? { name: r.name.split(" ")[0], pct } : best;
@@ -94,7 +126,8 @@ export default function CoachPage() {
     }
   }
 
-  const lastRun = pipelineStatus?.last_run;
+  const lastRun    = pipelineStatus?.last_run;
+  const displayName = coachName || session?.user?.name || "Coach";
 
   return (
     <div className="flex min-h-screen bg-teal-50">
@@ -105,7 +138,9 @@ export default function CoachPage() {
         {/* Header */}
         <div className="flex items-start justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-medium text-teal-800">Team overview</h1>
+            <h1 className="text-2xl font-medium text-teal-800">
+              {displayName}&rsquo;s team overview
+            </h1>
             <p className="text-sm text-teal-400 mt-1">{weekLabel()}</p>
           </div>
           <a

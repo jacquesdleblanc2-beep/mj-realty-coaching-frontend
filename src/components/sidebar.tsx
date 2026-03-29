@@ -33,8 +33,7 @@ export function Sidebar({ role }: SidebarProps) {
   const { data: session } = useSession();
   const nav               = role === "realtor" ? realtorNav : adminNav;
 
-  const name     = session?.user?.name ?? (role === "admin" ? "Martin" : "Realtor");
-  // "admin" role = coach portal (Martin's view)
+  const name     = session?.user?.name ?? (role === "admin" ? "Coach" : "Realtor");
   const image    = session?.user?.image ?? null;
   const initials = name
     .split(" ")
