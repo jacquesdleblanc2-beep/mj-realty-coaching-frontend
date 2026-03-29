@@ -7,12 +7,14 @@ import { useEffect, useState } from "react"
 export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [code,  setCode]  = useState("")
-  const [error, setError] = useState("")
+  const [code,      setCode]      = useState("")
+  const [codeError, setCodeError] = useState("")
+  const [signingIn, setSigningIn] = useState(false)
 
   const INVITE_CODE  = process.env.NEXT_PUBLIC_INVITE_CODE
   const MARTIN_EMAIL = process.env.NEXT_PUBLIC_MARTIN_EMAIL
 
+  // Once session confirms, route to the right page
   useEffect(() => {
     if (status === "authenticated" && session?.user?.email) {
       if (session.user.email === MARTIN_EMAIL) {
@@ -25,13 +27,34 @@ export default function Home() {
 
   const handleSignIn = () => {
     if (INVITE_CODE && code !== INVITE_CODE) {
-      setError("Invalid invite code.")
+      setCodeError("Invalid invite code.")
       return
     }
+    setCodeError("")
+    setSigningIn(true)
     signIn("google")
   }
 
-  if (status === "loading") return null
+  // Loading — NextAuth hydrating or mid-OAuth redirect
+  if (status === "loading" || signingIn) {
+    return (
+      <div className="min-h-screen bg-teal-50 flex flex-col items-center justify-center gap-4">
+        <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
+        <p className="text-sm text-teal-400">
+          {signingIn ? "Redirecting to Google…" : "Loading…"}
+        </p>
+      </div>
+    )
+  }
+
+  // Already authenticated — useEffect above will redirect, show spinner
+  if (status === "authenticated") {
+    return (
+      <div className="min-h-screen bg-teal-50 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-teal-50 flex flex-col items-center justify-center px-4">
@@ -52,34 +75,34 @@ export default function Home() {
         Track your progress, hit your goals, grow your GCI
       </p>
 
+      {/* Invite code — only shown when NEXT_PUBLIC_INVITE_CODE is set */}
+      {INVITE_CODE && (
+        <div className="flex flex-col items-center gap-1.5 mb-4 w-full max-w-xs">
+          <label className="text-xs text-teal-400 self-start">Invite code</label>
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => { setCode(e.target.value); setCodeError("") }}
+            onKeyDown={(e) => e.key === "Enter" && handleSignIn()}
+            placeholder="Enter your invite code"
+            className="w-full bg-white border border-teal-200 focus:border-teal-400 rounded-xl
+                       px-4 py-2.5 text-sm text-teal-800 focus:outline-none transition-colors
+                       placeholder:text-teal-300"
+          />
+          {codeError && <p className="text-xs text-red-500 self-start">{codeError}</p>}
+        </div>
+      )}
+
       {/* Sign in button */}
       <button
         onClick={handleSignIn}
         className="flex items-center gap-3 bg-white border border-teal-200 hover:border-teal-400
                    text-teal-800 font-medium px-6 py-3 rounded-xl shadow-sm hover:shadow
-                   transition-all text-sm mb-4"
+                   transition-all text-sm mb-8"
       >
         <GoogleIcon />
         Sign in with Google
       </button>
-
-      {/* Invite code — only shown when NEXT_PUBLIC_INVITE_CODE is set */}
-      {INVITE_CODE && (
-        <div className="flex flex-col items-center gap-1.5 mb-6 w-full max-w-xs">
-          <label className="text-xs text-teal-400 self-start">Have an invite code?</label>
-          <input
-            type="text"
-            value={code}
-            onChange={(e) => { setCode(e.target.value); setError("") }}
-            onKeyDown={(e) => e.key === "Enter" && handleSignIn()}
-            placeholder="Enter code"
-            className="w-full bg-white border border-teal-200 focus:border-teal-400 rounded-xl
-                       px-4 py-2.5 text-sm text-teal-800 focus:outline-none transition-colors
-                       placeholder:text-teal-300"
-          />
-          {error && <p className="text-xs text-red-500 self-start">{error}</p>}
-        </div>
-      )}
 
       {/* Demo links */}
       <div className="flex gap-4 text-sm text-teal-400">
