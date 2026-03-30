@@ -176,7 +176,7 @@ export default function CoachPage() {
             className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl
                        text-sm font-medium transition-colors"
           >
-            Run pipeline now ↗
+            Pipeline ↗
           </a>
         </div>
 

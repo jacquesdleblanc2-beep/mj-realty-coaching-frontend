@@ -20,13 +20,13 @@ const realtorNav = [
 ];
 
 const adminNav = [
-  { label: "Dashboard",    href: "/coach",           dot: null },
-  { label: "Realtors",     href: "/coach/realtors",  dot: null },
+  { label: "Overview",     href: "/coach",           dot: null },
+  { label: "My Realtors",  href: "/coach/realtors",  dot: null },
   { label: "Reports",      href: "/coach/reports",   dot: null },
-  { label: "Scheduler",    href: "/coach/scheduler", dot: null },
   { label: "Send History", href: "/coach/history",   dot: null },
-  { label: "Add Realtor",  href: "/coach/add",       dot: null },
-  { label: "Settings",    href: "/coach/settings",  dot: null },
+  { label: "Pipeline",     href: "/coach/scheduler", dot: null },
+  { label: "Add Realtor®", href: "/coach/add",       dot: null },
+  { label: "Settings",     href: "/coach/settings",  dot: null },
 ];
 
 export function Sidebar({ role }: SidebarProps) {
