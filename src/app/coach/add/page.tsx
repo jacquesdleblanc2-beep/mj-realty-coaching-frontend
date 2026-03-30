@@ -2,31 +2,24 @@
 
 // src/app/coach/add/page.tsx — Add a realtor to the coach's roster
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { createAdminRealtor } from "@/lib/api";
+import { useCoachId } from "@/lib/useCoachId";
 
 export default function AddRealtorPage() {
   const { status } = useSession();
   const router     = useRouter();
+  const coachId    = useCoachId();
 
-  const [coachId,      setCoachId]      = useState<string | null>(null);
   const [name,         setName]         = useState("");
   const [email,        setEmail]        = useState("");
   const [focus,        setFocus]        = useState("");
   const [submitting,   setSubmitting]   = useState(false);
   const [error,        setError]        = useState("");
   const [success,      setSuccess]      = useState(false);
-
-  useEffect(() => {
-    if (status === "unauthenticated") { router.push("/"); return; }
-    if (status !== "authenticated")   return;
-    const id = sessionStorage.getItem("coachId");
-    if (!id) { router.push("/coach"); return; }
-    setCoachId(id);
-  }, [status, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,10 +28,15 @@ export default function AddRealtorPage() {
     setSubmitting(true);
     try {
       const newRealtor = await createAdminRealtor({
-        name:     name.trim(),
-        email:    email.trim(),
-        coach_id: coachId,
+        name:            name.trim(),
+        email:           email.trim().toLowerCase(),
+        coach_id:        coachId,
+        coaching_focus:  focus.trim() || "General coaching",
       });
+      if (!newRealtor.id) {
+        console.error("createAdminRealtor returned no id:", newRealtor);
+        throw new Error("Realtor created but no ID returned. Check API response.");
+      }
       setSuccess(true);
       setTimeout(() => router.push(`/coach/realtors/${newRealtor.id}/setup?new=true`), 1500);
     } catch (err) {
@@ -75,7 +73,7 @@ export default function AddRealtorPage() {
                   <span className="text-teal-600 text-lg">✓</span>
                 </div>
                 <p className="text-sm font-medium text-teal-800">Realtor added!</p>
-                <p className="text-xs text-teal-400">Redirecting to dashboard…</p>
+                <p className="text-xs text-teal-400">Redirecting to setup…</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">

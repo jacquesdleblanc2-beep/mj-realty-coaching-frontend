@@ -8,26 +8,26 @@ import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { getRealtor, Realtor } from "@/lib/api";
 import { StrategyForm } from "./_form";
+import { useCoachId } from "@/lib/useCoachId";
 
 export default function RealtorDetailPage({ params }: { params: { id: string } }) {
   const { status }   = useSession();
   const router       = useRouter();
+  const coachId      = useCoachId();
   const [realtor, setRealtor] = useState<Realtor | null>(null);
   const [error,   setError]   = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/"); return; }
     if (status !== "authenticated")   return;
-
-    const coachId = sessionStorage.getItem("coachId");
-    if (!coachId) { router.push("/coach"); return; }
+    if (coachId === null) return; // still resolving
 
     getRealtor(params.id)
       .then(setRealtor)
       .catch((e) => setError((e as Error).message));
-  }, [status, params.id, router]);
+  }, [status, coachId, params.id, router]);
 
-  if (status === "loading" || (!realtor && !error)) {
+  if (status === "loading" || (status === "authenticated" && coachId === null) || (!realtor && !error)) {
     return (
       <div className="flex min-h-screen bg-teal-50 items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />

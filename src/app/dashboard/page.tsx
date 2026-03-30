@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import {
-  getRealtors, getAllProgress, getProgress, patchTask, toggleTask,
+  getRealtorByEmail, getAllProgress, getProgress, patchTask, toggleTask,
   saveActivityCell, updateRealtor, saveDailyFocus,
   Realtor, WeekProgress, ActivityRow, ProgressTask, ScoreHistoryEntry,
 } from "@/lib/api";
@@ -909,18 +909,16 @@ export default function DashboardPage() {
   useEffect(() => {
     if (status !== "authenticated") return;
     const email = session?.user?.email ?? "";
-    getRealtors()
-      .then(async (rs) => {
-        const match = rs.find((r) => r.email.toLowerCase() === email.toLowerCase()) ?? rs[0] ?? null;
+    getRealtorByEmail(email)
+      .then(async (match) => {
+        if (!match) { setLoading(false); return; }
         setRealtor(match);
-        if (match) {
-          const [prog, allProg] = await Promise.all([
-            getProgress(match.id, weekLabel),
-            getAllProgress(match.id),
-          ]);
-          setProgress(prog);
-          setAllProgress(allProg);
-        }
+        const [prog, allProg] = await Promise.all([
+          getProgress(match.id, weekLabel),
+          getAllProgress(match.id),
+        ]);
+        setProgress(prog);
+        setAllProgress(allProg);
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));

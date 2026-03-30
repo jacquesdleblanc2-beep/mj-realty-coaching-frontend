@@ -9,10 +9,12 @@ import { Suspense } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { getRealtor, Realtor } from "@/lib/api";
 import { StrategyForm } from "../_form";
+import { useCoachId } from "@/lib/useCoachId";
 
 function SetupPageInner({ id }: { id: string }) {
   const { status }  = useSession();
   const router      = useRouter();
+  const coachId     = useCoachId();
   const searchParams = useSearchParams();
   const isNew        = searchParams.get("new") === "true";
 
@@ -22,16 +24,14 @@ function SetupPageInner({ id }: { id: string }) {
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/"); return; }
     if (status !== "authenticated")   return;
-
-    const coachId = sessionStorage.getItem("coachId");
-    if (!coachId) { router.push("/coach"); return; }
+    if (coachId === null) return; // still resolving
 
     getRealtor(id)
       .then(setRealtor)
       .catch((e) => setError((e as Error).message));
-  }, [status, id, router]);
+  }, [status, coachId, id, router]);
 
-  if (status === "loading" || (!realtor && !error)) {
+  if (status === "loading" || (status === "authenticated" && coachId === null) || (!realtor && !error)) {
     return (
       <div className="flex min-h-screen bg-teal-50 items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />

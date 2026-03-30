@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
 import { getCoachRealtors, Realtor } from "@/lib/api";
+import { useCoachId } from "@/lib/useCoachId";
 
 function initials(name: string) {
   return name.split(" ").filter(Boolean).map((n) => n[0]).join("").slice(0, 2).toUpperCase();
@@ -16,6 +17,7 @@ function initials(name: string) {
 export default function CoachRealtorsPage() {
   const { status }                    = useSession();
   const router                        = useRouter();
+  const coachId                       = useCoachId();
   const [realtors, setRealtors]       = useState<Realtor[]>([]);
   const [loading,  setLoading]        = useState(true);
   const [error,    setError]          = useState("");
@@ -23,17 +25,15 @@ export default function CoachRealtorsPage() {
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/"); return; }
     if (status !== "authenticated")   return;
-
-    const coachId = sessionStorage.getItem("coachId");
-    if (!coachId) { router.push("/"); return; }
+    if (coachId === null) return; // still resolving
 
     getCoachRealtors(coachId)
       .then(setRealtors)
       .catch((e) => setError((e as Error).message))
       .finally(() => setLoading(false));
-  }, [status, router]);
+  }, [status, coachId, router]);
 
-  if (status === "loading" || loading) {
+  if (status === "loading" || (status === "authenticated" && coachId === null) || loading) {
     return (
       <div className="flex min-h-screen bg-teal-50 items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />

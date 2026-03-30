@@ -9,6 +9,7 @@ import { Sidebar } from "@/components/sidebar";
 import { MetricCard } from "@/components/metric-card";
 import { RealtorTable } from "@/components/realtor-table";
 import { getCoachByEmail, getCoachRealtors, getPipelineStatus, runSundayReminder, Realtor, PipelineStatus } from "@/lib/api";
+import { useCoachId } from "@/lib/useCoachId";
 
 function weekLabel(): string {
   const today  = new Date();
@@ -59,6 +60,7 @@ function AddedBanner() {
 export default function CoachPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const coachId                             = useCoachId();
   const [realtors, setRealtors]             = useState<Realtor[]>([]);
   const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus | null>(null);
   const [loading, setLoading]               = useState(true);
@@ -67,58 +69,26 @@ export default function CoachPage() {
   const [coachName, setCoachName]           = useState<string>("");
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/");
-      return;
-    }
+    if (status === "unauthenticated") { router.push("/"); return; }
     if (status !== "authenticated") return;
+    if (coachId === null) return; // still resolving
 
     const email = session?.user?.email ?? "";
 
-    async function loadCoach() {
-      // Resolve coachId — prefer sessionStorage, fall back to API lookup
-      let coachId = sessionStorage.getItem("coachId") ?? "";
+    // Fetch coach name for display
+    getCoachByEmail(email).then((coach) => {
+      if (coach) setCoachName(coach.name);
+    }).catch(() => {});
 
-      if (!coachId) {
-        try {
-          const coach = await getCoachByEmail(email);
-          if (!coach) { router.push("/"); return; }
-          coachId = coach.id;
-          setCoachName(coach.name);
-          sessionStorage.setItem("coachId", coachId);
-        } catch {
-          router.push("/");
-          return;
-        }
-      }
-
-      // If we got coachId from sessionStorage, still fetch the name
-      if (!coachName) {
-        try {
-          const coach = await getCoachByEmail(email);
-          if (coach) setCoachName(coach.name);
-        } catch {
-          // Non-fatal — name will fall back to session name
-        }
-      }
-
-      try {
-        const [rs, ps] = await Promise.all([
-          getCoachRealtors(coachId),
-          getPipelineStatus(),
-        ]);
-        setRealtors(rs);
-        setPipelineStatus(ps);
-      } catch (e) {
-        setError((e as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadCoach();
+    Promise.all([
+      getCoachRealtors(coachId),
+      getPipelineStatus(),
+    ])
+      .then(([rs, ps]) => { setRealtors(rs); setPipelineStatus(ps); })
+      .catch((e) => setError((e as Error).message))
+      .finally(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, session]);
+  }, [status, session, coachId]);
 
   if (status === "loading") {
     return (

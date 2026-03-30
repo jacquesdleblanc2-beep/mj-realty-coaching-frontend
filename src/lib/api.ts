@@ -177,7 +177,7 @@ export const deleteAdminCoach = (id: string) =>
 export const updateAdminCoach = (id: string, data: Partial<{ name: string; email: string; active: boolean }>) =>
   apiFetch<AdminCoach>(`/api/admin/coaches/${id}`, { method: "PATCH", body: JSON.stringify(data) });
 
-export const createAdminRealtor = (data: { name: string; email: string; coach_id?: string }) =>
+export const createAdminRealtor = (data: { name: string; email: string; coach_id?: string; coaching_focus?: string }) =>
   apiFetch<AdminRealtor>("/api/admin/realtors", { method: "POST", body: JSON.stringify(data) });
 
 export const deleteAdminRealtor = (id: string) =>
@@ -217,6 +217,9 @@ export const removeRealtorFromCoach = (coachId: string, realtorId: string) =>
 
 export const getRealtors = () =>
   apiFetch<Realtor[]>("/api/realtors");
+
+export const getRealtorByEmail = (email: string) =>
+  apiFetch<Realtor | null>(`/api/realtors/by-email/${encodeURIComponent(email)}`);
 
 export const getRealtor = (id: string) =>
   apiFetch<Realtor>(`/api/realtors/${id}`);
