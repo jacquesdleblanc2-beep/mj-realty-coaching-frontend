@@ -26,7 +26,6 @@ const adminNav = [
   { label: "Send History", href: "/coach/history",   dot: null },
   { label: "Pipeline",     href: "/coach/scheduler", dot: null },
   { label: "Add Realtor®", href: "/coach/add",       dot: null },
-  { label: "Settings",     href: "/coach/settings",  dot: null },
 ];
 
 export function Sidebar({ role }: SidebarProps) {
