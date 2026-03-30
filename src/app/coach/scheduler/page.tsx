@@ -15,7 +15,7 @@ function PipelineCard({
   title:       string;
   description: string;
   buttonLabel: string;
-  onRun:       () => Promise<void>;
+  onRun:       () => Promise<unknown>;
 }) {
   const [running, setRunning] = useState(false);
   const [result,  setResult]  = useState<string | null>(null);
