@@ -12,26 +12,40 @@ import { StrategyForm } from "../_form";
 import { useCoachId } from "@/lib/useCoachId";
 
 function SetupPageInner({ id }: { id: string }) {
-  const { status }  = useSession();
-  const router      = useRouter();
-  const coachId     = useCoachId();
-  const searchParams = useSearchParams();
-  const isNew        = searchParams.get("new") === "true";
+  const { data: session, status } = useSession();
+  const router                    = useRouter();
+  const coachId                   = useCoachId();
+  const SUPER_ADMIN               = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL;
+  const isSuperAdmin              = session?.user?.email?.toLowerCase() === SUPER_ADMIN?.toLowerCase();
+  const searchParams              = useSearchParams();
+  const isNew                     = searchParams.get("new") === "true";
 
   const [realtor, setRealtor] = useState<Realtor | null>(null);
   const [error,   setError]   = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/"); return; }
-    if (status !== "authenticated")   return;
-    if (coachId === null) return; // still resolving
+    if (status !== "authenticated") return;
+    // Super-admin can access any realtor page without a coachId
+    if (isSuperAdmin) return;
+    // Regular coaches need coachId
+    if (coachId === null) return; // still loading
+    // coachId resolved but empty means not a coach
+  }, [status, isSuperAdmin, coachId, router]);
 
+  useEffect(() => {
+    if (status !== "authenticated") return;
     getRealtor(id)
       .then(setRealtor)
       .catch((e) => setError((e as Error).message));
-  }, [status, coachId, id, router]);
+  }, [status, id]);
 
-  if (status === "loading" || (status === "authenticated" && coachId === null) || (!realtor && !error)) {
+  // Show spinner only while session or coachId is loading
+  // Super-admin never needs coachId so don't wait for it
+  const isLoading = status === "loading" ||
+    (!isSuperAdmin && coachId === null && status === "authenticated");
+
+  if (isLoading || (!realtor && !error)) {
     return (
       <div className="flex min-h-screen bg-teal-50 items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
