@@ -2,6 +2,7 @@
 
 // src/components/realtor-table.tsx
 
+import Link from "next/link";
 import { Realtor } from "@/lib/api";
 import { ScoreBar } from "./score-bar";
 
@@ -75,12 +76,14 @@ export function RealtorTable({ realtors }: RealtorTableProps) {
             return (
               <tr
                 key={r.id}
-                className="border-b border-teal-50 hover:bg-teal-50/40 transition-colors"
+                className="border-b border-teal-50 hover:bg-teal-50 transition-colors cursor-pointer"
               >
                 {/* Name / email */}
                 <td className="py-3 px-4">
-                  <p className="font-medium text-teal-800">{r.name}</p>
-                  <p className="text-xs text-teal-400">{r.email}</p>
+                  <Link href={`/coach/realtors/${r.id}`} className="block">
+                    <p className="font-medium text-teal-800">{r.name}</p>
+                    <p className="text-xs text-teal-400">{r.email}</p>
+                  </Link>
                 </td>
 
                 {/* Score bar */}

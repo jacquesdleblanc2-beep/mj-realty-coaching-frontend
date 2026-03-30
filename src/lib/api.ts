@@ -19,6 +19,7 @@ export interface Task {
   type:      string;
   enabled:   boolean;
   is_custom: boolean;
+  target?:   number;
 }
 
 export interface ScoreHistoryEntry {
@@ -62,6 +63,7 @@ export interface UpdateRealtorInput {
   martin_goals?:       string;
   priorities?:         string;
   yearly_goals?:       YearlyGoals;
+  tasks?:              Task[];
   current_gci?:        number;
   current_deals?:      number;
   current_buyers?:     number;

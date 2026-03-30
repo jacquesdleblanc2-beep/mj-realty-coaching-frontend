@@ -2,9 +2,9 @@
 
 // src/app/coach/page.tsx — Coach dashboard (multi-coach aware)
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { MetricCard } from "@/components/metric-card";
 import { RealtorTable } from "@/components/realtor-table";
@@ -28,6 +28,32 @@ function avg(nums: number[]): number {
 
 function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`bg-teal-100 rounded animate-pulse ${className}`} />;
+}
+
+function AddedBannerInner() {
+  const searchParams              = useSearchParams();
+  const [visible, setVisible]     = useState(searchParams.get("added") === "1");
+  useEffect(() => {
+    if (!visible) return;
+    const t = setTimeout(() => setVisible(false), 4000);
+    return () => clearTimeout(t);
+  }, [visible]);
+  if (!visible) return null;
+  return (
+    <div className="mb-6 flex items-center justify-between bg-green-50 border border-green-200
+                    rounded-xl px-5 py-3 text-sm text-green-700">
+      <span>✅ Realtor added and strategy saved. They can now log in.</span>
+      <button onClick={() => setVisible(false)} className="text-green-400 hover:text-green-600 ml-4">✕</button>
+    </div>
+  );
+}
+
+function AddedBanner() {
+  return (
+    <Suspense fallback={null}>
+      <AddedBannerInner />
+    </Suspense>
+  );
 }
 
 export default function CoachPage() {
@@ -134,6 +160,8 @@ export default function CoachPage() {
       <Sidebar role="admin" />
 
       <main className="flex-1 p-8 overflow-auto">
+
+        <AddedBanner />
 
         {/* Header */}
         <div className="flex items-start justify-between mb-8">

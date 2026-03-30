@@ -34,13 +34,13 @@ export default function AddRealtorPage() {
     setError("");
     setSubmitting(true);
     try {
-      await createAdminRealtor({
+      const newRealtor = await createAdminRealtor({
         name:     name.trim(),
         email:    email.trim(),
         coach_id: coachId,
       });
       setSuccess(true);
-      setTimeout(() => router.push("/coach"), 1500);
+      setTimeout(() => router.push(`/coach/realtors/${newRealtor.id}/setup?new=true`), 1500);
     } catch (err) {
       setError((err as Error).message);
     } finally {

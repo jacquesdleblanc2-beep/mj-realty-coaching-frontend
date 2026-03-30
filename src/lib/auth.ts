@@ -17,10 +17,9 @@ export function useAuthRedirect() {
 
   useEffect(() => {
     if (status !== "authenticated") return;
-
     const email = session?.user?.email ?? "";
 
-    // 1. Super admin check (env var only, never in DB)
+    // 1. Super admin
     if (SUPER_ADMIN && email.toLowerCase() === SUPER_ADMIN.toLowerCase()) {
       router.push("/admin");
       return;
@@ -34,7 +33,6 @@ export function useAuthRedirect() {
           router.push("/coach");
           return;
         }
-
         // 3. Realtor check
         getRealtors().then((realtors) => {
           if (isRealtorEmail(email, realtors)) {
@@ -45,7 +43,6 @@ export function useAuthRedirect() {
         });
       })
       .catch(() => {
-        // If coach API fails, fall through to realtor check
         getRealtors().then((realtors) => {
           if (isRealtorEmail(email, realtors)) {
             router.push("/dashboard");
