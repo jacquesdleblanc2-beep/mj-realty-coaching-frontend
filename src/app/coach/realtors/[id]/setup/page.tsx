@@ -2,7 +2,7 @@
 
 // src/app/coach/realtors/[id]/setup/page.tsx — First-time strategy setup
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -93,14 +93,15 @@ function SetupPageInner({ id }: { id: string }) {
   );
 }
 
-export default function SetupPage({ params }: { params: { id: string } }) {
+export default function SetupPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   return (
     <Suspense fallback={
       <div className="flex min-h-screen bg-teal-50 items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
       </div>
     }>
-      <SetupPageInner id={params.id} />
+      <SetupPageInner id={id} />
     </Suspense>
   );
 }

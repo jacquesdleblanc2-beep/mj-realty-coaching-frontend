@@ -2,7 +2,7 @@
 
 // src/app/coach/realtors/[id]/page.tsx — Realtor detail / strategy editor
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
@@ -10,7 +10,8 @@ import { getRealtor, Realtor } from "@/lib/api";
 import { StrategyForm } from "./_form";
 import { useCoachId } from "@/lib/useCoachId";
 
-export default function RealtorDetailPage({ params }: { params: { id: string } }) {
+export default function RealtorDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id }                    = use(params);
   const { data: session, status } = useSession();
   const router                    = useRouter();
   const coachId                   = useCoachId();
@@ -32,10 +33,10 @@ export default function RealtorDetailPage({ params }: { params: { id: string } }
 
   useEffect(() => {
     if (status !== "authenticated") return;
-    getRealtor(params.id)
+    getRealtor(id)
       .then(setRealtor)
       .catch((e) => setError((e as Error).message));
-  }, [status, params.id]);
+  }, [status, id]);
 
   // Show spinner only while session or coachId is loading
   // Super-admin never needs coachId so don't wait for it
@@ -78,7 +79,7 @@ export default function RealtorDetailPage({ params }: { params: { id: string } }
               saveLabel="Save Changes"
               onSaveSuccess={() => {
                 // Re-fetch to keep local state fresh after save
-                getRealtor(params.id).then(setRealtor).catch(() => {});
+                getRealtor(id).then(setRealtor).catch(() => {});
               }}
             />
           </>
