@@ -911,7 +911,11 @@ export default function DashboardPage() {
     const email = session?.user?.email ?? "";
     getRealtorByEmail(email)
       .then(async (match) => {
-        if (!match) { setLoading(false); return; }
+        if (!match) {
+          setError("Your account was not found. Ask your coach to add you.");
+          setLoading(false);
+          return;
+        }
         setRealtor(match);
         const [prog, allProg] = await Promise.all([
           getProgress(match.id, weekLabel),
