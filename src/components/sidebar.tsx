@@ -5,7 +5,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -103,6 +103,14 @@ export function Sidebar({ role }: SidebarProps) {
           <p className="text-xs text-teal-400">{role === "admin" ? "Coach" : "Realtor"}</p>
         </div>
       </div>
+      <button
+        onClick={() => signOut({ callbackUrl: "/" })}
+        className="w-full flex items-center gap-2 px-3 py-2 mt-1 text-xs text-teal-400
+                   hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+      >
+        <span>↩</span>
+        Sign out
+      </button>
     </aside>
   );
 }
