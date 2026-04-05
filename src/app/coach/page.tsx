@@ -199,7 +199,7 @@ export default function CoachPage() {
               {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12" />)}
             </div>
           ) : (
-            <RealtorTable realtors={realtors} onDeleted={(id) => setRealtors((prev) => prev.filter((r) => r.id !== id))} />
+            <RealtorTable realtors={realtors} />
           )}
         </div>
 

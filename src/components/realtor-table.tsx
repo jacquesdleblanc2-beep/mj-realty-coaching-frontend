@@ -2,9 +2,8 @@
 
 // src/components/realtor-table.tsx
 
-import { useState } from "react";
 import Link from "next/link";
-import { Realtor, deleteRealtor } from "@/lib/api";
+import { Realtor } from "@/lib/api";
 import { ScoreBar } from "./score-bar";
 
 function scoreLabel(pct: number): { text: string; cls: string } {
@@ -38,26 +37,9 @@ function Sparkline({ percentages }: { percentages: number[] }) {
 
 interface RealtorTableProps {
   realtors: Realtor[];
-  onDeleted?: (id: string) => void;
 }
 
-export function RealtorTable({ realtors, onDeleted }: RealtorTableProps) {
-  const [confirmId, setConfirmId] = useState<string | null>(null);
-  const [deleting,  setDeleting]  = useState(false);
-
-  async function handleDelete(id: string) {
-    setDeleting(true);
-    try {
-      await deleteRealtor(id);
-      setConfirmId(null);
-      onDeleted?.(id);
-    } catch (e) {
-      alert((e as Error).message);
-    } finally {
-      setDeleting(false);
-    }
-  }
-
+export function RealtorTable({ realtors }: RealtorTableProps) {
   if (realtors.length === 0) {
     return (
       <div className="text-center py-12 text-teal-400 text-sm">
@@ -67,33 +49,6 @@ export function RealtorTable({ realtors, onDeleted }: RealtorTableProps) {
   }
 
   return (
-    <>
-      {/* Confirm dialog */}
-      {confirmId && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl border border-teal-200 shadow-lg p-6 max-w-sm w-full mx-4">
-            <p className="text-sm font-semibold text-teal-800 mb-1">Delete realtor?</p>
-            <p className="text-sm text-teal-500 mb-5">This data will be lost forever and cannot be undone.</p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setConfirmId(null)}
-                disabled={deleting}
-                className="px-4 py-2 text-sm text-teal-600 border border-teal-200 rounded-lg hover:bg-teal-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(confirmId)}
-                disabled={deleting}
-                className="px-4 py-2 text-sm text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg transition-colors"
-              >
-                {deleting ? "Deleting…" : "Yes, delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
@@ -169,23 +124,11 @@ export function RealtorTable({ realtors, onDeleted }: RealtorTableProps) {
                   )}
                 </td>
 
-                {/* Delete */}
-                <td className="py-3 px-2">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setConfirmId(r.id); }}
-                    className="text-teal-200 hover:text-red-500 transition-colors p-1"
-                    aria-label="Delete realtor"
-                    title="Delete realtor"
-                  >
-                    🗑
-                  </button>
-                </td>
               </tr>
             );
           })}
         </tbody>
       </table>
     </div>
-    </>
   );
 }
