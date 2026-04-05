@@ -409,7 +409,7 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
                       ...t,
                       is_custom: false,
                       target: (t.type === "count" && t.baseTarget)
-                        ? Math.max(1, Math.round(t.baseTarget * (weeklyHours / 30)))
+                        ? Math.max(1, Math.round(t.baseTarget * (weeklyHours / 40)))
                         : t.target,
                     })) as Task[];
                     setTasks(scaled);
