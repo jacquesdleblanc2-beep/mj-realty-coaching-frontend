@@ -29,9 +29,9 @@ export const DEFAULT_TASKS: Task[] = [
 
 // ── Small helpers ─────────────────────────────────────────────────────────────
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, children, noMargin }: { title: string; children: React.ReactNode; noMargin?: boolean }) {
   return (
-    <div className="bg-white border border-teal-200 rounded-xl p-6 mb-6">
+    <div className={`bg-white border border-teal-200 rounded-xl p-6 ${noMargin ? "" : "mb-6"}`}>
       <h2 className="text-sm font-semibold text-teal-800 mb-4">{title}</h2>
       {children}
     </div>
@@ -133,56 +133,57 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
   return (
     <form onSubmit={handleSave}>
 
-      {/* Card 1 — Realtor Info */}
-      <Card title="Realtor Info">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs text-teal-500 mb-1">Name</label>
-            <p className="text-sm text-teal-800 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2.5">{realtor.name}</p>
+      {/* Cards 1 & 2 — side by side */}
+      <div className="grid grid-cols-2 gap-6 mb-6">
+        <Card title="Realtor Info" noMargin>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs text-teal-500 mb-1">Name</label>
+              <p className="text-sm text-teal-800 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2.5">{realtor.name}</p>
+            </div>
+            <div>
+              <label className="block text-xs text-teal-500 mb-1">Email</label>
+              <p className="text-sm text-teal-800 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2.5">{realtor.email}</p>
+            </div>
+            <Field label="Coaching focus">
+              <input
+                type="text"
+                value={focus}
+                onChange={(e) => setFocus(e.target.value)}
+                placeholder="e.g. Listings, Prospecting"
+                className={inputCls}
+              />
+            </Field>
           </div>
-          <div>
-            <label className="block text-xs text-teal-500 mb-1">Email</label>
-            <p className="text-sm text-teal-800 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2.5">{realtor.email}</p>
-          </div>
-          <Field label="Coaching focus">
-            <input
-              type="text"
-              value={focus}
-              onChange={(e) => setFocus(e.target.value)}
-              placeholder="e.g. Listings, Prospecting"
-              className={inputCls}
-            />
-          </Field>
-        </div>
-      </Card>
+        </Card>
 
-      {/* Card 2 — Coach Notes */}
-      <Card title="Coach Notes">
-        <div className="space-y-4">
-          <Field label="Goals & notes for this realtor">
-            <textarea
-              rows={3}
-              value={goals}
-              onChange={(e) => setGoals(e.target.value)}
-              placeholder="What should this realtor focus on this year?"
-              className={textareaCls}
-            />
-          </Field>
-          <Field label="Priorities">
-            <textarea
-              rows={3}
-              value={priorities}
-              onChange={(e) => setPriorities(e.target.value)}
-              placeholder="Top 3 priorities for this realtor…"
-              className={textareaCls}
-            />
-          </Field>
-        </div>
-      </Card>
+        <Card title="Coach Notes" noMargin>
+          <div className="space-y-4">
+            <Field label="Goals & notes for this realtor">
+              <textarea
+                rows={3}
+                value={goals}
+                onChange={(e) => setGoals(e.target.value)}
+                placeholder="What should this realtor focus on this year?"
+                className={textareaCls}
+              />
+            </Field>
+            <Field label="Priorities">
+              <textarea
+                rows={3}
+                value={priorities}
+                onChange={(e) => setPriorities(e.target.value)}
+                placeholder="Top 3 priorities for this realtor…"
+                className={textareaCls}
+              />
+            </Field>
+          </div>
+        </Card>
+      </div>
 
       {/* Card 3 — 2026 Yearly Goals */}
       <Card title="2026 Yearly Goals">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-6 gap-4">
           {(
             [
               ["Conservative GCI ($)",    "conservative_gci"],
@@ -212,7 +213,7 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
 
       {/* Card 4 — Weekly Tasks */}
       <Card title="Weekly Tasks">
-        <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-x-6">
           {tasks.map((t, i) => {
             const isNumeric = t.type === "count" || t.input_type === "count";
             return (
