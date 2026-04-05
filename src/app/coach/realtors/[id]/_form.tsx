@@ -229,6 +229,7 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
   const [saving,        setSaving]        = useState(false);
   const [error,         setError]         = useState("");
   const [saved,         setSaved]         = useState(false);
+  const [activePreset,  setActivePreset]  = useState<string>("");
   const [showAddForm,   setShowAddForm]   = useState(false);
   const [newCategory,   setNewCategory]   = useState<string>("Custom");
   const [newTaskName,   setNewTaskName]   = useState("");
@@ -309,24 +310,6 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
                 className={inputCls}
               />
             </Field>
-            <Field label="Hours per week this realtor works">
-              <input
-                type="number"
-                min={10} max={60} step={5}
-                value={weeklyHours}
-                onChange={(e) => {
-                  const newHours = Number(e.target.value);
-                  setWeeklyHours(newHours);
-                  setTasks((prev) => prev.map((t) => {
-                    if ((t.type === "count" || t.input_type === "count") && t.baseTarget) {
-                      return { ...t, target: Math.max(1, Math.round(t.baseTarget * (newHours / 30))) };
-                    }
-                    return t;
-                  }));
-                }}
-                className={inputCls}
-              />
-            </Field>
           </div>
         </Card>
 
@@ -386,31 +369,56 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
 
       {/* Card 4 — Weekly Tasks */}
       <Card title="Weekly Tasks">
-        {/* Preset selector */}
-        <div className="flex items-center gap-3 mb-4">
-          <label className="text-xs text-teal-500 shrink-0">Load preset</label>
-          <select
-            value=""
-            onChange={(e) => {
-              const preset = e.target.value;
-              if (!preset) return;
-              if (!confirm(`Replace all tasks with the "${preset}" system?`)) return;
-              const scaled = PRESETS[preset].map((t) => ({
-                ...t,
-                is_custom: false,
-                target: (t.type === "count" && t.baseTarget)
-                  ? Math.max(1, Math.round(t.baseTarget * (weeklyHours / 30)))
-                  : t.target,
-              })) as Task[];
-              setTasks(scaled);
-            }}
-            className="text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-700 bg-white focus:outline-none focus:border-teal-400"
-          >
-            <option value="">— select a system —</option>
-            {Object.keys(PRESETS).map((name) => (
-              <option key={name} value={name}>{name}</option>
-            ))}
-          </select>
+        {/* Preset pills + hours */}
+        <div className="mb-5 space-y-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-xs text-teal-500 shrink-0">System</span>
+            {Object.keys(PRESETS).map((name) => {
+              const active = activePreset === name;
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => {
+                    setActivePreset(name);
+                    const scaled = PRESETS[name].map((t) => ({
+                      ...t,
+                      is_custom: false,
+                      target: (t.type === "count" && t.baseTarget)
+                        ? Math.max(1, Math.round(t.baseTarget * (weeklyHours / 30)))
+                        : t.target,
+                    })) as Task[];
+                    setTasks(scaled);
+                  }}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors
+                    ${active
+                      ? "bg-teal-600 border-teal-600 text-white font-semibold"
+                      : "bg-white border-teal-200 text-teal-500 hover:border-teal-400 hover:text-teal-700"}`}
+                >
+                  {name}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-teal-500 shrink-0">Hours / week</span>
+            <input
+              type="number"
+              min={10} max={60} step={5}
+              value={weeklyHours}
+              onChange={(e) => {
+                const newHours = Number(e.target.value);
+                setWeeklyHours(newHours);
+                setTasks((prev) => prev.map((t) => {
+                  if ((t.type === "count" || t.input_type === "count") && t.baseTarget) {
+                    return { ...t, target: Math.max(1, Math.round(t.baseTarget * (newHours / 30))) };
+                  }
+                  return t;
+                }));
+              }}
+              className="w-20 text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-800 bg-white focus:outline-none focus:border-teal-400"
+            />
+          </div>
         </div>
         {(() => {
           // Build ordered category list preserving original task order
