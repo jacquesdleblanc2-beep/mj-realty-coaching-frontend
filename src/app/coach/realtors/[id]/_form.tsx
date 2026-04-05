@@ -101,12 +101,12 @@ const PRESETS: Record<string, Preset> = {
   "Ninja Selling": {
     note: "Verified — Official Ninja Nine (ninjaselling.com)",
     tasks: [
-      pt("Prospecting",     "Live interviews / prospecting calls",           "count",    10, 50),
+      pt("Prospecting",     "Live interviews / prospecting calls",           "count",    12, 50),
       pt("Prospecting",     "Send personal notes or texts",                  "count",    8,  10),
       pt("Prospecting",     "Live real estate reviews",                      "count",    6,  2),
       pt("Prospecting",     "Add new contacts to CRM",                       "count",    5,  3),
       pt("Prospecting",     "Request referrals",                             "count",    5,  3),
-      pt("Follow-Up",       "Warm calls to sphere (customer service calls)", "count",    8,  10),
+      pt("Follow-Up",       "Warm calls to sphere (customer service calls)", "count",    10, 10),
       pt("Follow-Up",       "Follow up with all active clients",             "checkbox", 8),
       pt("Follow-Up",       "Touch leads in CRM",                            "count",    6,  10),
       pt("Follow-Up",       "Update all CRM notes",                          "checkbox", 5),
@@ -121,39 +121,39 @@ const PRESETS: Record<string, Preset> = {
   "KW / MREA": {
     note: "Verified — MREA + KW Lead Generation 36:12:3",
     tasks: [
-      pt("Prospecting",     "Prospecting calls",                          "count",    8, 20),
-      pt("Prospecting",     "Warm calls to sphere",                       "count",    7, 10),
-      pt("Prospecting",     "Add contacts to CRM",                        "count",    5, 5),
-      pt("Prospecting",     "Request referrals",                          "count",    5, 3),
+      pt("Prospecting",     "Prospecting calls",                          "count",    10, 20),
+      pt("Prospecting",     "Warm calls to sphere",                       "count",    7,  10),
+      pt("Prospecting",     "Add contacts to CRM",                        "count",    5,  5),
+      pt("Prospecting",     "Request referrals",                          "count",    5,  3),
       pt("Prospecting",     "Door knock or attend event",                 "checkbox", 4),
-      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 8),
-      pt("Follow-Up",       "Touch leads in CRM (8x8 / 33 Touch)",        "count",    7, 10),
+      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 10),
+      pt("Follow-Up",       "Touch leads in CRM (8x8 / 33 Touch)",        "count",    7,  10),
       pt("Follow-Up",       "Update CRM notes",                           "checkbox", 5),
-      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8, 2),
-      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7, 1),
-      pt("Listings/Buyers", "Review new MLS listings",                    "count",    4, 10),
-      pt("Listings/Buyers", "Send market update",                         "count",    4, 5),
-      pt("Social/Brand",    "Post on social media",                       "count",    4, 3),
-      pt("Social/Brand",    "Request Google/Zillow review",               "count",    4, 1),
+      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,  2),
+      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,  1),
+      pt("Listings/Buyers", "Review new MLS listings",                    "count",    4,  10),
+      pt("Listings/Buyers", "Send market update",                         "count",    4,  5),
+      pt("Social/Brand",    "Post on social media",                       "count",    4,  3),
+      pt("Social/Brand",    "Request Google/Zillow review",               "count",    4,  1),
       pt("Education",       "Time block 3hr lead gen daily (5x/week)",    "checkbox", 6),
-      pt("Education",       "30+ min training",                           "checkbox", 5),
+      pt("Education",       "30+ min training",                           "checkbox", 6),
       pt("Education",       "Review coaching notes",                      "checkbox", 4),
     ],
   },
   "Ryan Serhant": {
     note: "Estimated — Serhant system philosophy (no fixed published numbers)",
     tasks: [
-      pt("Prospecting",     "Prospecting calls",                          "count",    8,  30),
-      pt("Prospecting",     "Expand sphere — new contacts added",         "count",    7,  5),
+      pt("Prospecting",     "Prospecting calls",                          "count",    12,  30),
+      pt("Prospecting",     "Expand sphere — new contacts added",         "count",    7,   5),
       pt("Prospecting",     "Door knock or attend community event",       "checkbox", 5),
-      pt("Prospecting",     "Request reviews (Google/Zillow)",            "count",    5,  2),
-      pt("Follow-Up",       "Follow up with all active clients",          "checkbox", 8),
-      pt("Follow-Up",       "Touch leads in CRM",                         "count",    7,  15),
-      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,  2),
-      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,  1),
-      pt("Social/Brand",    "Post on social media",                       "count",    8,  7),
-      pt("Social/Brand",    "Publish video content",                      "count",    7,  3),
-      pt("Social/Brand",    "Share educational real estate content",      "count",    5,  3),
+      pt("Prospecting",     "Request reviews (Google/Zillow)",            "count",    5,   2),
+      pt("Follow-Up",       "Follow up with all active clients",          "checkbox", 12),
+      pt("Follow-Up",       "Touch leads in CRM",                         "count",    10,  15),
+      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,   2),
+      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,   1),
+      pt("Social/Brand",    "Post on social media",                       "count",    10,  7),
+      pt("Social/Brand",    "Publish video content",                      "count",    9,   3),
+      pt("Social/Brand",    "Share educational real estate content",      "count",    5,   3),
       pt("Education",       "30+ min training / reading",                 "checkbox", 5),
       pt("Education",       "Time block lead gen hour",                   "checkbox", 5),
     ],
@@ -172,10 +172,10 @@ const PRESETS: Record<string, Preset> = {
       pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,  2),
       pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,  2),
       pt("Listings/Buyers", "Send market update",                         "count",    4,  5),
-      pt("Social/Brand",    "Post on social media",                       "count",    6,  5),
+      pt("Social/Brand",    "Post on social media",                       "count",    5,  5),
       pt("Social/Brand",    "Publish video content",                      "count",    6,  2),
       pt("Social/Brand",    "Share educational content",                  "count",    4,  2),
-      pt("Education",       "Daily role-play / scripts practice",         "checkbox", 6),
+      pt("Education",       "Daily role-play / scripts practice",         "checkbox", 5),
       pt("Education",       "30+ min training",                           "checkbox", 5),
       pt("Education",       "Review coaching notes",                      "checkbox", 4),
       pt("Education",       "Time block lead gen hour",                   "checkbox", 5),
@@ -184,15 +184,15 @@ const PRESETS: Record<string, Preset> = {
   "Buffini Referral": {
     note: "Estimated — Buffini system (Referral Maker CRM sets targets based on income goal)",
     tasks: [
-      pt("Prospecting",     "Warm calls to sphere / past clients",        "count",    8,  10),
-      pt("Prospecting",     "Request referrals",                          "count",    8,  5),
-      pt("Prospecting",     "Send personal notes",                        "count",    7,  5),
-      pt("Prospecting",     "Pop-by / in-person client visit",            "count",    6,  2),
-      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 8),
-      pt("Follow-Up",       "Touch leads in CRM",                         "count",    6,  8),
-      pt("Follow-Up",       "Monthly mailer / newsletter sent",           "checkbox", 5),
-      pt("Listings/Buyers", "Send market update to clients",              "count",    5,  5),
-      pt("Social/Brand",    "Request Google/Zillow review",               "count",    5,  2),
+      pt("Prospecting",     "Warm calls to sphere / past clients",        "count",    15,  10),
+      pt("Prospecting",     "Request referrals",                          "count",    15,  5),
+      pt("Prospecting",     "Send personal notes",                        "count",    12,  5),
+      pt("Prospecting",     "Pop-by / in-person client visit",            "count",    8,   2),
+      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 13),
+      pt("Follow-Up",       "Touch leads in CRM",                         "count",    9,   8),
+      pt("Follow-Up",       "Monthly mailer / newsletter sent",           "checkbox", 8),
+      pt("Listings/Buyers", "Send market update to clients",              "count",    5,   5),
+      pt("Social/Brand",    "Request Google/Zillow review",               "count",    5,   2),
       pt("Education",       "30+ min reading / training",                 "checkbox", 5),
       pt("Education",       "Review coaching notes",                      "checkbox", 5),
     ],
@@ -200,33 +200,33 @@ const PRESETS: Record<string, Preset> = {
   "The ONE Thing": {
     note: "Estimated — The ONE Thing philosophy (book is not activity-count based)",
     tasks: [
-      pt("Prospecting",     "Prospecting calls (lead gen hour)",          "count",    8,  15),
-      pt("Prospecting",     "Add contacts to CRM",                        "count",    5,  3),
-      pt("Prospecting",     "Touch leads in CRM",                         "count",    7,  10),
-      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 7),
-      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,  1),
-      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,  1),
-      pt("Education",       "Identify single MIT (most important task)",  "checkbox", 8),
-      pt("Education",       "Time block lead gen hour (no interruptions)","checkbox", 8),
-      pt("Education",       "30+ min reading / training",                 "checkbox", 6),
+      pt("Prospecting",     "Prospecting calls (lead gen hour)",          "count",    15,  15),
+      pt("Prospecting",     "Add contacts to CRM",                        "count",    7,   3),
+      pt("Prospecting",     "Touch leads in CRM",                         "count",    10,  10),
+      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 12),
+      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    14,  1),
+      pt("Listings/Buyers", "Buyer consultation completed",               "count",    12,  1),
+      pt("Education",       "Identify single MIT (most important task)",  "checkbox", 12),
+      pt("Education",       "Time block lead gen hour (no interruptions)","checkbox", 14),
+      pt("Education",       "30+ min reading / training",                 "checkbox", 4),
     ],
   },
   "BOLD / KW MAPS": {
     note: "Estimated — BOLD/KW MAPS (business plan targets set individually by coach)",
     tasks: [
-      pt("Prospecting",     "Prospecting calls",                          "count",    8,  20),
-      pt("Prospecting",     "Warm calls to sphere",                       "count",    7,  10),
-      pt("Prospecting",     "Add contacts to CRM",                        "count",    5,  5),
-      pt("Prospecting",     "Request referrals",                          "count",    5,  3),
+      pt("Prospecting",     "Prospecting calls",                          "count",    10,  20),
+      pt("Prospecting",     "Warm calls to sphere",                       "count",    7,   10),
+      pt("Prospecting",     "Add contacts to CRM",                        "count",    5,   5),
+      pt("Prospecting",     "Request referrals",                          "count",    5,   3),
       pt("Prospecting",     "Door knock or attend event",                 "checkbox", 4),
-      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 8),
-      pt("Follow-Up",       "Touch leads in CRM",                         "count",    7,  15),
+      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 10),
+      pt("Follow-Up",       "Touch leads in CRM",                         "count",    7,   15),
       pt("Follow-Up",       "Update CRM notes",                           "checkbox", 4),
-      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,  2),
-      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,  2),
-      pt("Social/Brand",    "Post on social media",                       "count",    5,  3),
-      pt("Social/Brand",    "Request reviews",                            "count",    4,  2),
-      pt("Education",       "Daily role-play / scripts practice",         "checkbox", 7),
+      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,   2),
+      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,   2),
+      pt("Social/Brand",    "Post on social media",                       "count",    5,   3),
+      pt("Social/Brand",    "Request reviews",                            "count",    4,   2),
+      pt("Education",       "Daily role-play / scripts practice",         "checkbox", 9),
       pt("Education",       "30+ min training",                           "checkbox", 5),
       pt("Education",       "Time block lead gen hour",                   "checkbox", 6),
       pt("Education",       "Review coaching notes",                      "checkbox", 4),
@@ -289,6 +289,11 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    const enabledTotal = tasks.filter((t) => t.enabled).reduce((s, t) => s + (t.points || 0), 0);
+    if (enabledTotal !== 100) {
+      setError(`Enabled tasks must total exactly 100 points (currently ${enabledTotal}). Adjust points before saving.`);
+      return;
+    }
     setSaving(true); setError(""); setSaved(false);
     try {
       await updateRealtor(realtor.id, {
@@ -655,10 +660,11 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
       {/* Live points total */}
       {(() => {
         const total = tasks.filter((t) => t.enabled).reduce((sum, t) => sum + (t.points || 0), 0);
-        const met   = total >= 100;
+        const exact = total === 100;
+        const over  = total > 100;
         return (
-          <p className={`text-sm font-medium mb-4 ${met ? "text-green-600" : "text-teal-400"}`}>
-            Total: {total} / 100 pts{met ? " ✓" : ""}
+          <p className={`text-sm font-medium mb-4 ${exact ? "text-green-600" : over ? "text-red-500" : "text-amber-500"}`}>
+            Total: {total} / 100 pts{exact ? " ✓" : over ? ` — remove ${total - 100} pts` : ` — add ${100 - total} pts`}
           </p>
         );
       })()}
