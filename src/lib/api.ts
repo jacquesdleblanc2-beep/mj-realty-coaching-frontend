@@ -225,6 +225,20 @@ export const getRealtorByEmail = (email: string) =>
 export const getRealtor = (id: string) =>
   apiFetch<Realtor>(`/api/realtors/${id}`);
 
+export async function registerSelf(name: string, email: string): Promise<Realtor> {
+  const res = await fetch(`${BASE}/api/realtors`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, coaching_focus: "General coaching" }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    if (res.status === 409) return getRealtorByEmail(email) as Promise<Realtor>;
+    throw new Error((err as { detail?: string }).detail ?? "Failed to register");
+  }
+  return res.json() as Promise<Realtor>;
+}
+
 export const addRealtor = (data: NewRealtorInput) =>
   apiFetch<Realtor>("/api/realtors", {
     method: "POST",

@@ -3,12 +3,26 @@
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCoachByEmail, getRealtors, Realtor } from "./api";
+import { getCoachByEmail, getRealtorByEmail, registerSelf } from "./api";
 
 const SUPER_ADMIN = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL;
 
-export function isRealtorEmail(email: string, realtors: Realtor[]): boolean {
-  return realtors.some((r) => r.email.toLowerCase() === email.toLowerCase());
+async function resolveRealtorAndRedirect(
+  name: string,
+  email: string,
+  router: ReturnType<typeof useRouter>
+) {
+  try {
+    const existing = await getRealtorByEmail(email);
+    if (existing) {
+      router.push("/dashboard");
+      return;
+    }
+    await registerSelf(name, email);
+    router.push("/dashboard");
+  } catch {
+    router.push("/no-access");
+  }
 }
 
 export function useAuthRedirect() {
@@ -18,6 +32,7 @@ export function useAuthRedirect() {
   useEffect(() => {
     if (status !== "authenticated") return;
     const email = session?.user?.email ?? "";
+    const name  = session?.user?.name  ?? email;
 
     // 1. Super admin
     if (SUPER_ADMIN && email.toLowerCase() === SUPER_ADMIN.toLowerCase()) {
@@ -25,7 +40,7 @@ export function useAuthRedirect() {
       return;
     }
 
-    // 2. Coach check
+    // 2. Coach check → 3. Realtor check / auto-register
     getCoachByEmail(email)
       .then((coach) => {
         if (coach) {
@@ -33,23 +48,8 @@ export function useAuthRedirect() {
           router.push("/coach");
           return;
         }
-        // 3. Realtor check
-        getRealtors().then((realtors) => {
-          if (isRealtorEmail(email, realtors)) {
-            router.push("/dashboard");
-          } else {
-            router.push("/no-access");
-          }
-        });
+        resolveRealtorAndRedirect(name, email, router);
       })
-      .catch(() => {
-        getRealtors().then((realtors) => {
-          if (isRealtorEmail(email, realtors)) {
-            router.push("/dashboard");
-          } else {
-            router.push("/no-access");
-          }
-        });
-      });
+      .catch(() => resolveRealtorAndRedirect(name, email, router));
   }, [status, session, router]);
 }
