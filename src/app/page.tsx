@@ -93,13 +93,6 @@ export default function Home() {
         Sign in with Google
       </button>
 
-      {/* Demo links */}
-      <div className="flex gap-4 text-sm text-teal-400">
-        <a href="/dashboard" className="hover:text-teal-600 transition-colors underline underline-offset-2">
-          Realtor demo
-        </a>
-      </div>
-
       {/* Footer */}
       <p className="absolute bottom-6 text-xs text-teal-300">
         © {new Date().getFullYear()} MJ Realty Coaching Platform
