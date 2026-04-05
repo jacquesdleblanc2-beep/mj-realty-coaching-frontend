@@ -13,10 +13,11 @@ interface SidebarProps {
 }
 
 const realtorNav = [
-  { label: "Dashboard", href: "/dashboard",         dot: null },
-  { label: "History",   href: "/dashboard/history", dot: null },
-  { label: "Profile",   href: "/dashboard/profile", dot: null },
-  { label: "Help",      href: "/dashboard/help",    dot: null },
+  { label: "Dashboard",  href: "/dashboard",          dot: null },
+  { label: "My Roadmap", href: "/dashboard/roadmap",  dot: null },
+  { label: "History",    href: "/dashboard/history",  dot: null },
+  { label: "Profile",    href: "/dashboard/profile",  dot: null },
+  { label: "Help",       href: "/dashboard/help",     dot: null },
 ];
 
 const adminNav = [

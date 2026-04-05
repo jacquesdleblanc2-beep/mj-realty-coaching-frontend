@@ -51,6 +51,8 @@ export interface Realtor {
   current_sellers:     number;
   last_goals_updated?: string;
   weekly_hours?:       number | null;
+  experience_level?:   string | null;
+  roadmap_completed?:  string[];
 }
 
 export interface NewRealtorInput {
@@ -73,6 +75,8 @@ export interface UpdateRealtorInput {
   current_sellers?:    number;
   last_goals_updated?: string;
   weekly_hours?:       number | null;
+  experience_level?:   string | null;
+  roadmap_completed?:  string[];
 }
 
 export interface PipelineLogEntry {
@@ -324,6 +328,17 @@ export const saveDailyFocus = (
     `/api/progress/${encodeURIComponent(realtorId)}/${encodeURIComponent(weekLabel)}/daily`,
     { method: "PATCH", body: JSON.stringify({ date, items }) }
   );
+
+export async function patchRoadmapItem(realtorId: string, item: string, completed: boolean): Promise<string[]> {
+  const res = await fetch(`${BASE}/api/realtors/${encodeURIComponent(realtorId)}/roadmap`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ item, completed }),
+  });
+  if (!res.ok) throw new Error("Failed to update roadmap");
+  const data = await res.json();
+  return data.roadmap_completed as string[];
+}
 
 export const saveActivityCell = (
   realtorId: string,

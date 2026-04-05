@@ -247,8 +247,9 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
     buyer_deals:      realtor.yearly_goals?.buyer_deals       ?? 0,
     seller_deals:     realtor.yearly_goals?.seller_deals      ?? 0,
   });
-  const [currentGci,    setCurrentGci]    = useState(realtor.current_gci ?? 0);
-  const [weeklyHours,   setWeeklyHours]   = useState<number>(realtor.weekly_hours ?? 30);
+  const [currentGci,      setCurrentGci]      = useState(realtor.current_gci ?? 0);
+  const [weeklyHours,     setWeeklyHours]     = useState<number>(realtor.weekly_hours ?? 30);
+  const [experienceLevel, setExperienceLevel] = useState(realtor.experience_level ?? "new");
   const [tasks,         setTasks]         = useState<Task[]>(initTasks);
   const [saving,        setSaving]        = useState(false);
   const [error,         setError]         = useState("");
@@ -297,13 +298,14 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
     setSaving(true); setError(""); setSaved(false);
     try {
       await updateRealtor(realtor.id, {
-        coaching_focus: focus,
-        martin_goals:   goals,
+        coaching_focus:  focus,
+        martin_goals:    goals,
         priorities,
-        yearly_goals:   yearlyGoals,
+        yearly_goals:    yearlyGoals,
         tasks,
-        current_gci:    currentGci,
-        weekly_hours:   weeklyHours,
+        current_gci:     currentGci,
+        weekly_hours:    weeklyHours,
+        experience_level: experienceLevel,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -338,6 +340,18 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
                 placeholder="e.g. Listings, Prospecting"
                 className={inputCls}
               />
+            </Field>
+            <Field label="Experience level">
+              <select
+                value={experienceLevel}
+                onChange={(e) => setExperienceLevel(e.target.value)}
+                className={inputCls}
+              >
+                <option value="new">New Realtor (Year 0–1)</option>
+                <option value="y12">1–2 Years</option>
+                <option value="y35">3–5 Years</option>
+                <option value="y5plus">5+ Years</option>
+              </select>
             </Field>
           </div>
         </Card>
