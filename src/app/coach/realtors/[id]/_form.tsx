@@ -85,6 +85,8 @@ function autoDetectTasks(tasks: Task[]): Task[] {
   });
 }
 
+const CATEGORIES = ["Prospecting", "Listings/Buyers", "Follow-Up", "Social/Brand", "Education", "Custom"] as const;
+
 export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSuccess }: StrategyFormProps) {
   const initTasks = autoDetectTasks(realtor.tasks?.length ? realtor.tasks : DEFAULT_TASKS);
 
@@ -98,14 +100,35 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
     buyer_deals:      realtor.yearly_goals?.buyer_deals       ?? 0,
     seller_deals:     realtor.yearly_goals?.seller_deals      ?? 0,
   });
-  const [currentGci,  setCurrentGci]  = useState(realtor.current_gci ?? 0);
-  const [tasks,       setTasks]       = useState<Task[]>(initTasks);
-  const [saving,      setSaving]      = useState(false);
-  const [error,       setError]       = useState("");
-  const [saved,       setSaved]       = useState(false);
+  const [currentGci,    setCurrentGci]    = useState(realtor.current_gci ?? 0);
+  const [tasks,         setTasks]         = useState<Task[]>(initTasks);
+  const [saving,        setSaving]        = useState(false);
+  const [error,         setError]         = useState("");
+  const [saved,         setSaved]         = useState(false);
+  const [showAddForm,   setShowAddForm]   = useState(false);
+  const [newCategory,   setNewCategory]   = useState<string>("Custom");
+  const [newTaskName,   setNewTaskName]   = useState("");
 
   function updateTask(i: number, patch: Partial<Task>) {
     setTasks((prev) => prev.map((t, idx) => idx === i ? { ...t, ...patch } : t));
+  }
+
+  function addCustomTask() {
+    if (!newTaskName.trim()) return;
+    const newTask: Task = {
+      category: newCategory, task: newTaskName.trim(), points: 5,
+      type: "checkbox", input_type: "checkbox", enabled: true, is_custom: true,
+    };
+    // Insert after the last task in the same category, or at end
+    setTasks((prev) => {
+      const lastIdx = prev.map((t, i) => t.category === newCategory ? i : -1).filter(i => i >= 0).at(-1);
+      if (lastIdx === undefined) return [...prev, newTask];
+      const next = [...prev];
+      next.splice(lastIdx + 1, 0, newTask);
+      return next;
+    });
+    setNewTaskName("");
+    setShowAddForm(false);
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -213,98 +236,157 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
 
       {/* Card 4 — Weekly Tasks */}
       <Card title="Weekly Tasks">
-        <div className="grid grid-cols-2 gap-x-6">
-          {tasks.map((t, i) => {
-            const isNumeric = t.type === "count" || t.input_type === "count";
-            return (
-              <div key={i} className="py-2 border-b border-teal-50 last:border-0 space-y-1.5">
-                {/* Line 1: toggle + editable label */}
-                <div className="flex items-center gap-2">
-                  <Toggle checked={t.enabled} onChange={() => updateTask(i, { enabled: !t.enabled })} />
-                  <input
-                    type="text"
-                    value={t.task}
-                    onChange={(e) => updateTask(i, { task: e.target.value })}
-                    placeholder="Task description"
-                    className={`flex-1 min-w-0 text-sm bg-teal-50 border border-teal-200 rounded-lg px-2 py-1
-                                focus:outline-none focus:border-teal-400 transition-colors
-                                ${t.enabled ? "text-teal-800" : "text-teal-300"}`}
-                  />
-                </div>
+        {(() => {
+          // Build ordered category list preserving original task order
+          const seenCats: string[] = [];
+          tasks.forEach((t) => { if (!seenCats.includes(t.category)) seenCats.push(t.category); });
 
-                {/* Line 2: controls right-aligned */}
-                <div className="flex items-center gap-2 justify-end flex-wrap">
-                  {/* Type pill toggle */}
-                  <div className="flex rounded-lg overflow-hidden border border-teal-200 text-xs shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => updateTask(i, { type: "checkbox", input_type: "checkbox" })}
-                      className={`px-2 py-1 transition-colors ${!isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
-                    >
-                      ✓ Checkbox
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateTask(i, { type: "count", input_type: "count" })}
-                      className={`px-2 py-1 transition-colors ${isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
-                    >
-                      # Numeric
-                    </button>
-                  </div>
+          return (
+            <div className="space-y-4">
+              {seenCats.map((cat) => {
+                const catTasks = tasks
+                  .map((t, i) => ({ t, i }))
+                  .filter(({ t }) => t.category === cat);
 
-                  {/* Target (Numeric only) */}
-                  {isNumeric && (
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span className="text-xs text-teal-400">target</span>
-                      <input
-                        type="number" min={1}
-                        value={t.target ?? 1}
-                        onChange={(e) => updateTask(i, { target: Number(e.target.value) })}
-                        className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
-                      />
+                return (
+                  <div key={cat}>
+                    {/* Category header */}
+                    <div className="col-span-2 mb-2">
+                      <span className="inline-block text-[11px] font-semibold uppercase tracking-wider
+                                       text-teal-600 bg-teal-100 rounded px-3 py-1.5">
+                        {cat}
+                      </span>
                     </div>
-                  )}
 
-                  {/* Points */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-xs text-teal-400">pts</span>
-                    <input
-                      type="number" min={0}
-                      value={t.points}
-                      onChange={(e) => updateTask(i, { points: Number(e.target.value) })}
-                      className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
-                    />
+                    {/* 2-col task grid for this category */}
+                    <div className="grid grid-cols-2 gap-x-6">
+                      {catTasks.map(({ t, i }) => {
+                        const isNumeric = t.type === "count" || t.input_type === "count";
+                        return (
+                          <div key={i} className="py-2 border-b border-teal-50 last:border-0 space-y-1.5">
+                            {/* Line 1: toggle + label */}
+                            <div className="flex items-center gap-2">
+                              <Toggle checked={t.enabled} onChange={() => updateTask(i, { enabled: !t.enabled })} />
+                              <input
+                                type="text"
+                                value={t.task}
+                                onChange={(e) => updateTask(i, { task: e.target.value })}
+                                placeholder="Task description"
+                                className={`flex-1 min-w-0 text-sm bg-teal-50 border border-teal-200 rounded-lg px-2 py-1
+                                            focus:outline-none focus:border-teal-400 transition-colors
+                                            ${t.enabled ? "text-teal-800" : "text-teal-300"}`}
+                              />
+                            </div>
+
+                            {/* Line 2: controls right-aligned */}
+                            <div className="flex items-center gap-2 justify-end flex-wrap">
+                              <div className="flex rounded-lg overflow-hidden border border-teal-200 text-xs shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => updateTask(i, { type: "checkbox", input_type: "checkbox" })}
+                                  className={`px-2 py-1 transition-colors ${!isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
+                                >
+                                  ✓ Checkbox
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => updateTask(i, { type: "count", input_type: "count" })}
+                                  className={`px-2 py-1 transition-colors ${isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
+                                >
+                                  # Numeric
+                                </button>
+                              </div>
+
+                              {isNumeric && (
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <span className="text-xs text-teal-400">target</span>
+                                  <input
+                                    type="number" min={1}
+                                    value={t.target ?? 1}
+                                    onChange={(e) => updateTask(i, { target: Number(e.target.value) })}
+                                    className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
+                                  />
+                                </div>
+                              )}
+
+                              <div className="flex items-center gap-1 shrink-0">
+                                <span className="text-xs text-teal-400">pts</span>
+                                <input
+                                  type="number" min={0}
+                                  value={t.points}
+                                  onChange={(e) => updateTask(i, { points: Number(e.target.value) })}
+                                  className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
+                                />
+                              </div>
+
+                              {t.is_custom && (
+                                <button
+                                  type="button"
+                                  onClick={() => setTasks((prev) => prev.filter((_, idx) => idx !== i))}
+                                  className="shrink-0 text-teal-300 hover:text-red-500 transition-colors text-base px-1"
+                                  aria-label="Remove task"
+                                >
+                                  ×
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-
-                  {/* Delete (custom tasks only) */}
-                  {t.is_custom && (
-                    <button
-                      type="button"
-                      onClick={() => setTasks((prev) => prev.filter((_, idx) => idx !== i))}
-                      className="shrink-0 text-teal-300 hover:text-red-500 transition-colors text-base px-1"
-                      aria-label="Remove task"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* Add custom task */}
-        <button
-          type="button"
-          onClick={() => setTasks((prev) => [...prev, {
-            category: "Custom", task: "", points: 5,
-            type: "checkbox", input_type: "checkbox", enabled: true, is_custom: true,
-          }])}
-          className="mt-3 text-xs text-teal-500 hover:text-teal-700 border border-dashed border-teal-200
-                     hover:border-teal-400 rounded-lg px-3 py-1.5 transition-colors"
-        >
-          + Add custom task
-        </button>
+        <div className="mt-4">
+          {showAddForm ? (
+            <div className="flex items-center gap-2 flex-wrap p-3 bg-teal-50 border border-teal-200 rounded-lg">
+              <select
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                className="text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-700 bg-white focus:outline-none focus:border-teal-400"
+              >
+                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <input
+                type="text"
+                value={newTaskName}
+                onChange={(e) => setNewTaskName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomTask())}
+                placeholder="Task name"
+                autoFocus
+                className="flex-1 min-w-40 text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-800 bg-white focus:outline-none focus:border-teal-400"
+              />
+              <button
+                type="button"
+                onClick={addCustomTask}
+                className="text-xs text-white bg-teal-500 hover:bg-teal-600 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowAddForm(false); setNewTaskName(""); }}
+                className="text-xs text-teal-400 hover:text-teal-600 px-2 py-1.5"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowAddForm(true)}
+              className="text-xs text-teal-500 hover:text-teal-700 border border-dashed border-teal-200
+                         hover:border-teal-400 rounded-lg px-3 py-1.5 transition-colors"
+            >
+              + Add custom task
+            </button>
+          )}
+        </div>
       </Card>
 
       {error && (
