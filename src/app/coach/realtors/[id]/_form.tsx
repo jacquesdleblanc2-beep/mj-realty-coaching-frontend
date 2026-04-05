@@ -108,6 +108,7 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
   const [showAddForm,   setShowAddForm]   = useState(false);
   const [newCategory,   setNewCategory]   = useState<string>("Custom");
   const [newTaskName,   setNewTaskName]   = useState("");
+  const [newTaskType,   setNewTaskType]   = useState<"checkbox" | "count">("checkbox");
 
   function updateTask(i: number, patch: Partial<Task>) {
     setTasks((prev) => prev.map((t, idx) => idx === i ? { ...t, ...patch } : t));
@@ -117,7 +118,7 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
     if (!newTaskName.trim()) return;
     const newTask: Task = {
       category: newCategory, task: newTaskName.trim(), points: 5,
-      type: "checkbox", input_type: "checkbox", enabled: true, is_custom: true,
+      type: newTaskType, input_type: newTaskType, enabled: true, is_custom: true,
     };
     // Insert after the last task in the same category, or at end
     setTasks((prev) => {
@@ -128,6 +129,7 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
       return next;
     });
     setNewTaskName("");
+    setNewTaskType("checkbox");
     setShowAddForm(false);
   }
 
@@ -345,13 +347,16 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
         <div className="mt-4">
           {showAddForm ? (
             <div className="flex items-center gap-2 flex-wrap p-3 bg-teal-50 border border-teal-200 rounded-lg">
+              {/* Category */}
               <select
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                className="text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-700 bg-white focus:outline-none focus:border-teal-400"
+                className="text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-700 bg-white focus:outline-none focus:border-teal-400 shrink-0"
               >
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
+
+              {/* Task name — smaller, doesn't need to stretch */}
               <input
                 type="text"
                 value={newTaskName}
@@ -359,19 +364,38 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomTask())}
                 placeholder="Task name"
                 autoFocus
-                className="flex-1 min-w-40 text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-800 bg-white focus:outline-none focus:border-teal-400"
+                className="w-48 text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-800 bg-white focus:outline-none focus:border-teal-400"
               />
+
+              {/* Type pill toggle */}
+              <div className="flex rounded-lg overflow-hidden border border-teal-200 text-xs shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setNewTaskType("checkbox")}
+                  className={`px-2 py-1.5 transition-colors ${newTaskType === "checkbox" ? "bg-teal-500 text-white" : "text-teal-500 bg-white hover:bg-teal-50"}`}
+                >
+                  ✓ Checkbox
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewTaskType("count")}
+                  className={`px-2 py-1.5 transition-colors ${newTaskType === "count" ? "bg-teal-500 text-white" : "text-teal-500 bg-white hover:bg-teal-50"}`}
+                >
+                  # Numeric
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={addCustomTask}
-                className="text-xs text-white bg-teal-500 hover:bg-teal-600 px-3 py-1.5 rounded-lg transition-colors"
+                className="text-xs text-white bg-teal-500 hover:bg-teal-600 px-3 py-1.5 rounded-lg transition-colors shrink-0"
               >
                 Add
               </button>
               <button
                 type="button"
-                onClick={() => { setShowAddForm(false); setNewTaskName(""); }}
-                className="text-xs text-teal-400 hover:text-teal-600 px-2 py-1.5"
+                onClick={() => { setShowAddForm(false); setNewTaskName(""); setNewTaskType("checkbox"); }}
+                className="text-xs text-teal-400 hover:text-teal-600 px-2 py-1.5 shrink-0"
               >
                 Cancel
               </button>
