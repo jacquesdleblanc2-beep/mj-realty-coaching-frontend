@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google"
 const handler = NextAuth({
   providers: [
     GoogleProvider({
+      authorization: { params: { prompt: "select_account" } },
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
