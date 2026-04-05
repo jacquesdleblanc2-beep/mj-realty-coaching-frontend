@@ -364,7 +364,7 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomTask())}
                 placeholder="Task name"
                 autoFocus
-                className="w-48 text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-800 bg-white focus:outline-none focus:border-teal-400"
+                className="flex-1 min-w-0 text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-800 bg-white focus:outline-none focus:border-teal-400"
               />
 
               {/* Type pill toggle */}
