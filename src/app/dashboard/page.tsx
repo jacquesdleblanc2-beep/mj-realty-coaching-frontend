@@ -567,7 +567,7 @@ function MyWeekTable({
   }
 
   async function handleCountChange(task: ProgressTask, fullDay: string, raw: string) {
-    if (task.done) return; // locked
+    // no lock — allow editing even after target is met
     const value = Math.max(0, parseInt(raw) || 0);
     setSaving(task.task);
 
@@ -689,7 +689,6 @@ function MyWeekTable({
                   const ep      = earnedPoints(t);
                   const target  = t.target ?? 1;
                   const total   = t.weekly_total ?? 0;
-                  const locked  = isCount && t.done;
                   const isSaving = saving === t.task;
 
                   const ptsCls = t.done
@@ -739,15 +738,12 @@ function MyWeekTable({
                               defaultValue={val || ""}
                               key={`${t.task}-${fullDay}-${val}`}
                               placeholder="0"
-                              disabled={locked || isSaving}
+                              disabled={isSaving}
                               onBlur={(e) => handleCountChange(t, fullDay, e.target.value)}
-                              className={`w-9 text-center text-[13px] border rounded py-1 focus:outline-none
-                                          transition-colors
-                                          [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
-                                          [&::-webkit-inner-spin-button]:appearance-none
-                                          ${locked
-                                            ? "bg-teal-50 border-teal-100 text-teal-400 cursor-not-allowed"
-                                            : "bg-white border-teal-200 text-teal-800 focus:border-teal-400"}`}
+                              className="w-9 text-center text-[13px] border rounded py-1 focus:outline-none
+                                         transition-colors bg-white border-teal-200 text-teal-800 focus:border-teal-400
+                                         [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
+                                         [&::-webkit-inner-spin-button]:appearance-none"
                             />
                           </td>
                         );
