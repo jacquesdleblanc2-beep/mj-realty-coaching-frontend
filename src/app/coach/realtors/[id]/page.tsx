@@ -55,7 +55,7 @@ export default function RealtorDetailPage({ params }: { params: Promise<{ id: st
     <div className="flex min-h-screen bg-teal-50">
       <Sidebar role="admin" />
 
-      <main className="flex-1 p-8 overflow-auto max-w-2xl">
+      <main className="flex-1 p-8 overflow-auto">
 
         <div className="mb-6">
           <a href="/coach" className="text-xs text-teal-400 hover:text-teal-600 transition-colors">

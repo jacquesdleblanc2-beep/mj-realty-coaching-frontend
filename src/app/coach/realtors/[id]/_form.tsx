@@ -74,8 +74,19 @@ interface StrategyFormProps {
   onSaveSuccess: () => void;
 }
 
+function autoDetectTasks(tasks: Task[]): Task[] {
+  return tasks.map((t) => {
+    if (t.type === "count") return t; // already numeric, leave alone
+    const match = t.task.match(/(\d+)\+?/);
+    if (match) {
+      return { ...t, type: "count", input_type: "count", target: Number(match[1]) };
+    }
+    return t;
+  });
+}
+
 export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSuccess }: StrategyFormProps) {
-  const initTasks = realtor.tasks?.length ? realtor.tasks : DEFAULT_TASKS;
+  const initTasks = autoDetectTasks(realtor.tasks?.length ? realtor.tasks : DEFAULT_TASKS);
 
   const [focus,       setFocus]       = useState(realtor.coaching_focus ?? "");
   const [goals,       setGoals]       = useState(realtor.martin_goals   ?? "");
@@ -201,77 +212,81 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
 
       {/* Card 4 — Weekly Tasks */}
       <Card title="Weekly Tasks">
-        <div className="space-y-1">
+        <div className="space-y-2">
           {tasks.map((t, i) => {
             const isNumeric = t.type === "count" || t.input_type === "count";
             return (
-              <div key={i} className="flex items-center gap-2 py-2 border-b border-teal-50 last:border-0">
-                {/* Toggle */}
-                <Toggle checked={t.enabled} onChange={() => updateTask(i, { enabled: !t.enabled })} />
-
-                {/* Editable label */}
-                <input
-                  type="text"
-                  value={t.task}
-                  onChange={(e) => updateTask(i, { task: e.target.value })}
-                  className={`flex-1 min-w-0 text-sm bg-transparent border-b border-transparent
-                              hover:border-teal-200 focus:border-teal-400 focus:outline-none px-1 py-0.5
-                              ${t.enabled ? "text-teal-800" : "text-teal-300"}`}
-                />
-
-                {/* Type pill toggle */}
-                <div className="flex shrink-0 rounded-lg overflow-hidden border border-teal-200 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => updateTask(i, { type: "checkbox", input_type: "checkbox" })}
-                    className={`px-2 py-1 transition-colors ${!isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
-                  >
-                    ✓ Checkbox
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateTask(i, { type: "count", input_type: "count" })}
-                    className={`px-2 py-1 transition-colors ${isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
-                  >
-                    # Numeric
-                  </button>
-                </div>
-
-                {/* Target (Numeric only) */}
-                {isNumeric && (
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-xs text-teal-400">target</span>
-                    <input
-                      type="number" min={1}
-                      value={t.target ?? 1}
-                      onChange={(e) => updateTask(i, { target: Number(e.target.value) })}
-                      className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
-                    />
-                  </div>
-                )}
-
-                {/* Points */}
-                <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-xs text-teal-400">pts</span>
+              <div key={i} className="py-2 border-b border-teal-50 last:border-0 space-y-1.5">
+                {/* Line 1: toggle + editable label */}
+                <div className="flex items-center gap-2">
+                  <Toggle checked={t.enabled} onChange={() => updateTask(i, { enabled: !t.enabled })} />
                   <input
-                    type="number" min={0}
-                    value={t.points}
-                    onChange={(e) => updateTask(i, { points: Number(e.target.value) })}
-                    className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
+                    type="text"
+                    value={t.task}
+                    onChange={(e) => updateTask(i, { task: e.target.value })}
+                    placeholder="Task description"
+                    className={`flex-1 min-w-0 text-sm bg-teal-50 border border-teal-200 rounded-lg px-2 py-1
+                                focus:outline-none focus:border-teal-400 transition-colors
+                                ${t.enabled ? "text-teal-800" : "text-teal-300"}`}
                   />
                 </div>
 
-                {/* Delete (custom tasks only) */}
-                {t.is_custom && (
-                  <button
-                    type="button"
-                    onClick={() => setTasks((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="shrink-0 text-teal-300 hover:text-red-500 transition-colors text-base px-1"
-                    aria-label="Remove task"
-                  >
-                    ×
-                  </button>
-                )}
+                {/* Line 2: controls right-aligned */}
+                <div className="flex items-center gap-2 justify-end flex-wrap">
+                  {/* Type pill toggle */}
+                  <div className="flex rounded-lg overflow-hidden border border-teal-200 text-xs shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => updateTask(i, { type: "checkbox", input_type: "checkbox" })}
+                      className={`px-2 py-1 transition-colors ${!isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
+                    >
+                      ✓ Checkbox
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateTask(i, { type: "count", input_type: "count" })}
+                      className={`px-2 py-1 transition-colors ${isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
+                    >
+                      # Numeric
+                    </button>
+                  </div>
+
+                  {/* Target (Numeric only) */}
+                  {isNumeric && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-xs text-teal-400">target</span>
+                      <input
+                        type="number" min={1}
+                        value={t.target ?? 1}
+                        onChange={(e) => updateTask(i, { target: Number(e.target.value) })}
+                        className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
+                      />
+                    </div>
+                  )}
+
+                  {/* Points */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="text-xs text-teal-400">pts</span>
+                    <input
+                      type="number" min={0}
+                      value={t.points}
+                      onChange={(e) => updateTask(i, { points: Number(e.target.value) })}
+                      className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
+                    />
+                  </div>
+
+                  {/* Delete (custom tasks only) */}
+                  {t.is_custom && (
+                    <button
+                      type="button"
+                      onClick={() => setTasks((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="shrink-0 text-teal-300 hover:text-red-500 transition-colors text-base px-1"
+                      aria-label="Remove task"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -318,7 +333,10 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
           {saving ? "Saving…" : saveLabel}
         </button>
         {saved && (
-          <span className="text-sm text-teal-600 font-medium">Saved ✓</span>
+          <div>
+            <span className="text-sm text-teal-600 font-medium">Saved ✓</span>
+            <p className="text-xs text-teal-400 mt-0.5">Changes will apply starting next week.</p>
+          </div>
         )}
       </div>
 
