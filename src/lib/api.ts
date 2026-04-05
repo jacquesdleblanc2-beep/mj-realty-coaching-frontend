@@ -17,10 +17,11 @@ export interface Task {
   task:       string;
   points:     number;
   type:       string;
-  input_type?: "checkbox" | "count" | "yes_no";
-  enabled:    boolean;
-  is_custom:  boolean;
-  target?:    number;
+  input_type?:  "checkbox" | "count" | "yes_no";
+  enabled:      boolean;
+  is_custom:    boolean;
+  target?:      number;
+  baseTarget?:  number;
 }
 
 export interface ScoreHistoryEntry {
@@ -49,6 +50,7 @@ export interface Realtor {
   current_buyers:      number;
   current_sellers:     number;
   last_goals_updated?: string;
+  weekly_hours?:       number | null;
 }
 
 export interface NewRealtorInput {
@@ -70,6 +72,7 @@ export interface UpdateRealtorInput {
   current_buyers?:     number;
   current_sellers?:    number;
   last_goals_updated?: string;
+  weekly_hours?:       number | null;
 }
 
 export interface PipelineLogEntry {
