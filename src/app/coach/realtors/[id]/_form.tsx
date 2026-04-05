@@ -109,6 +109,8 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
   const [newCategory,   setNewCategory]   = useState<string>("Custom");
   const [newTaskName,   setNewTaskName]   = useState("");
   const [newTaskType,   setNewTaskType]   = useState<"checkbox" | "count">("checkbox");
+  const [newTaskTarget, setNewTaskTarget] = useState(1);
+  const [newTaskPoints, setNewTaskPoints] = useState(5);
 
   function updateTask(i: number, patch: Partial<Task>) {
     setTasks((prev) => prev.map((t, idx) => idx === i ? { ...t, ...patch } : t));
@@ -117,8 +119,9 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
   function addCustomTask() {
     if (!newTaskName.trim()) return;
     const newTask: Task = {
-      category: newCategory, task: newTaskName.trim(), points: 5,
+      category: newCategory, task: newTaskName.trim(), points: newTaskPoints,
       type: newTaskType, input_type: newTaskType, enabled: true, is_custom: true,
+      ...(newTaskType === "count" ? { target: newTaskTarget } : {}),
     };
     // Insert after the last task in the same category, or at end
     setTasks((prev) => {
@@ -130,6 +133,8 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
     });
     setNewTaskName("");
     setNewTaskType("checkbox");
+    setNewTaskTarget(1);
+    setNewTaskPoints(5);
     setShowAddForm(false);
   }
 
@@ -385,6 +390,30 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
                 </button>
               </div>
 
+              {/* Target (Numeric only) */}
+              {newTaskType === "count" && (
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className="text-xs text-teal-400">target</span>
+                  <input
+                    type="number" min={1}
+                    value={newTaskTarget}
+                    onChange={(e) => setNewTaskTarget(Number(e.target.value))}
+                    className="w-14 text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-800 bg-white focus:outline-none focus:border-teal-400"
+                  />
+                </div>
+              )}
+
+              {/* Points */}
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="text-xs text-teal-400">pts</span>
+                <input
+                  type="number" min={0}
+                  value={newTaskPoints}
+                  onChange={(e) => setNewTaskPoints(Number(e.target.value))}
+                  className="w-14 text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-800 bg-white focus:outline-none focus:border-teal-400"
+                />
+              </div>
+
               <button
                 type="button"
                 onClick={addCustomTask}
@@ -394,7 +423,7 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
               </button>
               <button
                 type="button"
-                onClick={() => { setShowAddForm(false); setNewTaskName(""); setNewTaskType("checkbox"); }}
+                onClick={() => { setShowAddForm(false); setNewTaskName(""); setNewTaskType("checkbox"); setNewTaskTarget(1); setNewTaskPoints(5); }}
                 className="text-xs text-teal-400 hover:text-teal-600 px-2 py-1.5 shrink-0"
               >
                 Cancel
