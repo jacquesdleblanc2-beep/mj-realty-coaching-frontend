@@ -13,13 +13,14 @@ export interface YearlyGoals {
 }
 
 export interface Task {
-  category:  string;
-  task:      string;
-  points:    number;
-  type:      string;
-  enabled:   boolean;
-  is_custom: boolean;
-  target?:   number;
+  category:   string;
+  task:       string;
+  points:     number;
+  type:       string;
+  input_type?: "checkbox" | "count" | "yes_no";
+  enabled:    boolean;
+  is_custom:  boolean;
+  target?:    number;
 }
 
 export interface ScoreHistoryEntry {
@@ -93,7 +94,7 @@ export interface ProgressTask {
   points:        number;
   enabled:       boolean;
   done:          boolean;
-  input_type?:   "count" | "yes_no";
+  input_type?:   "count" | "yes_no" | "checkbox";
   target?:       number;
   daily_counts?: Record<string, number>;
   weekly_total?: number;

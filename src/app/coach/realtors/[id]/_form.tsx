@@ -201,39 +201,94 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
 
       {/* Card 4 — Weekly Tasks */}
       <Card title="Weekly Tasks">
-        <div className="space-y-2">
-          {tasks.map((t, i) => (
-            <div key={i} className="flex items-center gap-3 py-2 border-b border-teal-50 last:border-0">
-              <Toggle checked={t.enabled} onChange={() => updateTask(i, { enabled: !t.enabled })} />
-              <span className={`flex-1 text-sm ${t.enabled ? "text-teal-800" : "text-teal-300"}`}>
-                {t.task}
-              </span>
-              <span className="text-[10px] bg-teal-100 text-teal-500 px-1.5 py-0.5 rounded shrink-0">
-                {t.type}
-              </span>
-              {t.type === "count" && (
+        <div className="space-y-1">
+          {tasks.map((t, i) => {
+            const isNumeric = t.type === "count" || t.input_type === "count";
+            return (
+              <div key={i} className="flex items-center gap-2 py-2 border-b border-teal-50 last:border-0">
+                {/* Toggle */}
+                <Toggle checked={t.enabled} onChange={() => updateTask(i, { enabled: !t.enabled })} />
+
+                {/* Editable label */}
+                <input
+                  type="text"
+                  value={t.task}
+                  onChange={(e) => updateTask(i, { task: e.target.value })}
+                  className={`flex-1 min-w-0 text-sm bg-transparent border-b border-transparent
+                              hover:border-teal-200 focus:border-teal-400 focus:outline-none px-1 py-0.5
+                              ${t.enabled ? "text-teal-800" : "text-teal-300"}`}
+                />
+
+                {/* Type pill toggle */}
+                <div className="flex shrink-0 rounded-lg overflow-hidden border border-teal-200 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => updateTask(i, { type: "checkbox", input_type: "checkbox" })}
+                    className={`px-2 py-1 transition-colors ${!isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
+                  >
+                    ✓ Checkbox
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateTask(i, { type: "count", input_type: "count" })}
+                    className={`px-2 py-1 transition-colors ${isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
+                  >
+                    # Numeric
+                  </button>
+                </div>
+
+                {/* Target (Numeric only) */}
+                {isNumeric && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="text-xs text-teal-400">target</span>
+                    <input
+                      type="number" min={1}
+                      value={t.target ?? 1}
+                      onChange={(e) => updateTask(i, { target: Number(e.target.value) })}
+                      className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
+                    />
+                  </div>
+                )}
+
+                {/* Points */}
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-xs text-teal-400">target</span>
+                  <span className="text-xs text-teal-400">pts</span>
                   <input
-                    type="number" min={1}
-                    value={t.target ?? 1}
-                    onChange={(e) => updateTask(i, { target: Number(e.target.value) })}
+                    type="number" min={0}
+                    value={t.points}
+                    onChange={(e) => updateTask(i, { points: Number(e.target.value) })}
                     className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
                   />
                 </div>
-              )}
-              <div className="flex items-center gap-1 shrink-0">
-                <span className="text-xs text-teal-400">pts</span>
-                <input
-                  type="number" min={0}
-                  value={t.points}
-                  onChange={(e) => updateTask(i, { points: Number(e.target.value) })}
-                  className="w-14 border border-teal-200 rounded-lg px-2 py-1 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
-                />
+
+                {/* Delete (custom tasks only) */}
+                {t.is_custom && (
+                  <button
+                    type="button"
+                    onClick={() => setTasks((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="shrink-0 text-teal-300 hover:text-red-500 transition-colors text-base px-1"
+                    aria-label="Remove task"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
+        {/* Add custom task */}
+        <button
+          type="button"
+          onClick={() => setTasks((prev) => [...prev, {
+            category: "Custom", task: "", points: 5,
+            type: "checkbox", input_type: "checkbox", enabled: true, is_custom: true,
+          }])}
+          className="mt-3 text-xs text-teal-500 hover:text-teal-700 border border-dashed border-teal-200
+                     hover:border-teal-400 rounded-lg px-3 py-1.5 transition-colors"
+        >
+          + Add custom task
+        </button>
       </Card>
 
       {error && (
@@ -241,6 +296,17 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
           {error}
         </p>
       )}
+
+      {/* Live points total */}
+      {(() => {
+        const total = tasks.filter((t) => t.enabled).reduce((sum, t) => sum + (t.points || 0), 0);
+        const met   = total >= 100;
+        return (
+          <p className={`text-sm font-medium mb-4 ${met ? "text-green-600" : "text-teal-400"}`}>
+            Total: {total} / 100 pts{met ? " ✓" : ""}
+          </p>
+        );
+      })()}
 
       <div className="flex items-center gap-4">
         <button

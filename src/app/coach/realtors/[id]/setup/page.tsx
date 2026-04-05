@@ -57,7 +57,7 @@ function SetupPageInner({ id }: { id: string }) {
     <div className="flex min-h-screen bg-teal-50">
       <Sidebar role="admin" />
 
-      <main className="flex-1 p-8 overflow-auto max-w-2xl">
+      <main className="flex-1 p-8 overflow-auto">
 
         {isNew && (
           <div className="bg-teal-600 text-white rounded-xl px-5 py-3 mb-6 text-sm font-medium">
