@@ -103,6 +103,7 @@ export interface ProgressTask {
   enabled:       boolean;
   done:          boolean;
   input_type?:   "count" | "yes_no" | "checkbox";
+  type?:         string;
   target?:       number;
   daily_counts?: Record<string, number>;
   weekly_total?: number;
