@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import {
   getRealtorByEmail, getAllProgress, getProgress, patchTask, toggleTask,
-  saveActivityCell, updateRealtor, saveDailyFocus,
+  saveActivityCell, updateRealtor, saveDailyFocus, getCoachById,
   Realtor, WeekProgress, ActivityRow, ProgressTask, ScoreHistoryEntry,
 } from "@/lib/api";
 
@@ -537,7 +537,7 @@ const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 const FULL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 function earnedPoints(t: ProgressTask): number {
-  if (t.input_type === "count") {
+  if (t.input_type === "count" || t.type === "count") {
     const target = t.target ?? 1;
     const total  = t.weekly_total ?? 0;
     return Math.round(Math.min(total / target, 1.0) * t.points * 10) / 10;
@@ -895,6 +895,7 @@ export default function DashboardPage() {
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState<string | null>(null);
   const [tab,         setTab]         = useState<DashTab>("overview");
+  const [coachName,   setCoachName]   = useState<string>("Your coach");
 
   const weekLabel = currentWeekLabel();
 
@@ -913,6 +914,9 @@ export default function DashboardPage() {
           return;
         }
         setRealtor(match);
+        if (match.coach_id) {
+          getCoachById(match.coach_id).then((c) => { if (c?.name) setCoachName(c.name); }).catch(() => {});
+        }
         const [prog, allProg] = await Promise.all([
           getProgress(match.id, weekLabel),
           getAllProgress(match.id),
@@ -1050,7 +1054,7 @@ export default function DashboardPage() {
             {/* Martin's banner */}
             <div className="bg-teal-600 rounded-xl px-5 py-3 mb-6">
               <p className="text-teal-200 text-[11px] uppercase tracking-wider font-medium mb-1.5">
-                Martin&apos;s goals for you this week
+                {coachName}&apos;s goals for you this week
               </p>
               {hasGoals ? (
                 <ul className="space-y-0.5">
@@ -1062,7 +1066,7 @@ export default function DashboardPage() {
                 </ul>
               ) : (
                 <p className="text-teal-300 text-sm italic">
-                  Martin hasn&apos;t set goals for this week yet. Check back Monday morning.
+                  {coachName} hasn&apos;t set goals for this week yet. Check back Monday morning.
                 </p>
               )}
             </div>

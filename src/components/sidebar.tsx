@@ -45,7 +45,7 @@ export function Sidebar({ role }: SidebarProps) {
     .toUpperCase();
 
   return (
-    <aside className="w-56 min-h-screen bg-white border-r border-teal-200 flex flex-col shrink-0">
+    <aside className="w-56 min-h-screen bg-white border-r border-teal-200 flex flex-col justify-between shrink-0">
 
       {/* Logo */}
       <div className="px-5 py-5 border-b border-teal-200">
@@ -84,34 +84,36 @@ export function Sidebar({ role }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer / user */}
-      <div className="px-4 py-4 border-t border-teal-200 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center shrink-0 overflow-hidden">
-          {image ? (
-            <Image
-              src={image}
-              alt={name}
-              width={32}
-              height={32}
-              className="w-full h-full object-cover rounded-full"
-            />
-          ) : (
-            <span className="text-white text-xs font-bold">{initials}</span>
-          )}
+      {/* Footer / user + sign out */}
+      <div className="flex flex-col gap-0">
+        <div className="px-4 py-4 border-t border-teal-200 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center shrink-0 overflow-hidden">
+            {image ? (
+              <Image
+                src={image}
+                alt={name}
+                width={32}
+                height={32}
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              <span className="text-white text-xs font-bold">{initials}</span>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-teal-800 truncate">{name}</p>
+            <p className="text-xs text-teal-400">{role === "admin" ? "Coach" : "Realtor"}</p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-teal-800 truncate">{name}</p>
-          <p className="text-xs text-teal-400">{role === "admin" ? "Coach" : "Realtor"}</p>
-        </div>
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="w-full flex items-center gap-2 px-3 py-2 mb-2 text-xs text-teal-400
+                     hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+        >
+          <span>↩</span>
+          Sign out
+        </button>
       </div>
-      <button
-        onClick={() => signOut({ callbackUrl: "/" })}
-        className="w-full flex items-center gap-2 px-3 py-2 mt-1 text-xs text-teal-400
-                   hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-      >
-        <span>↩</span>
-        Sign out
-      </button>
     </aside>
   );
 }

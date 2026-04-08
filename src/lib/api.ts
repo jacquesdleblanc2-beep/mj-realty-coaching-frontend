@@ -53,6 +53,7 @@ export interface Realtor {
   weekly_hours?:       number | null;
   experience_level?:   string | null;
   roadmap_completed?:  string[];
+  coach_id?:           string | null;
 }
 
 export interface NewRealtorInput {
@@ -208,6 +209,14 @@ export interface Coach {
 
 export const getCoaches = () =>
   apiFetch<Coach[]>("/api/coaches");
+
+export async function getCoachById(coachId: string): Promise<{ name: string } | null> {
+  try {
+    return await apiFetch<Coach>(`/api/coaches/${encodeURIComponent(coachId)}`);
+  } catch {
+    return null;
+  }
+}
 
 export const getCoachByEmail = (email: string) =>
   apiFetch<Coach | null>(`/api/coaches/by-email/${encodeURIComponent(email)}`);
