@@ -441,6 +441,11 @@ export default function AdminPage() {
           </span>
         </div>
         <div className="flex items-center gap-4">
+          <a href="/admin/notices"
+             className="text-sm text-teal-600 hover:text-teal-800 border border-teal-200
+                        px-4 py-2 rounded-lg transition-colors">
+            Notices →
+          </a>
           <a href="/admin/status"
              className="text-sm text-teal-600 hover:text-teal-800 border border-teal-200
                         px-4 py-2 rounded-lg transition-colors">

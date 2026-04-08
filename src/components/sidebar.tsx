@@ -7,6 +7,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { useNotices } from "@/lib/useNotices";
 
 interface SidebarProps {
   role: "realtor" | "admin";
@@ -15,24 +16,27 @@ interface SidebarProps {
 const realtorNav = [
   { label: "Dashboard",  href: "/dashboard",          dot: null },
   { label: "My Roadmap", href: "/dashboard/roadmap",  dot: null },
+  { label: "Notices",    href: "/dashboard/notices",  dot: null },
   { label: "History",    href: "/dashboard/history",  dot: null },
   { label: "Profile",    href: "/dashboard/profile",  dot: null },
   { label: "Help",       href: "/dashboard/help",     dot: null },
 ];
 
 const adminNav = [
-  { label: "Overview",     href: "/coach",           dot: null },
-  { label: "My Realtors",  href: "/coach/realtors",  dot: null },
-  { label: "Reports",      href: "/coach/reports",   dot: null },
-  { label: "Send History", href: "/coach/history",   dot: null },
-  { label: "Pipeline",     href: "/coach/scheduler", dot: null },
-  { label: "Add Realtor®", href: "/coach/add",       dot: null },
+  { label: "Overview",     href: "/coach",            dot: null },
+  { label: "Notices",      href: "/coach/notices",    dot: null },
+  { label: "My Realtors",  href: "/coach/realtors",   dot: null },
+  { label: "Reports",      href: "/coach/reports",    dot: null },
+  { label: "Send History", href: "/coach/history",    dot: null },
+  { label: "Pipeline",     href: "/coach/scheduler",  dot: null },
+  { label: "Add Realtor®", href: "/coach/add",        dot: null },
 ];
 
 export function Sidebar({ role }: SidebarProps) {
   const pathname          = usePathname();
   const { data: session } = useSession();
   const nav               = role === "realtor" ? realtorNav : adminNav;
+  const unreadCount       = useNotices(role);
 
   const name     = session?.user?.name ?? (role === "admin" ? "Coach" : "Realtor");
   const image    = session?.user?.image ?? null;
@@ -76,9 +80,14 @@ export function Sidebar({ role }: SidebarProps) {
               )}
             >
               {item.label}
-              {item.dot === "orange" && (
+              {item.label === "Notices" && unreadCount > 0 ? (
+                <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white
+                                 text-[10px] font-bold flex items-center justify-center shrink-0">
+                  {unreadCount}
+                </span>
+              ) : item.dot === "orange" ? (
                 <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
-              )}
+              ) : null}
             </Link>
           );
         })}

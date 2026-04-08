@@ -350,6 +350,39 @@ export async function patchRoadmapItem(realtorId: string, item: string, complete
   return data.roadmap_completed as string[];
 }
 
+// ── Notices ────────────────────────────────────────────────────────────────────
+
+export interface Notice {
+  id:         string;
+  title:      string;
+  body:       string;
+  audience:   string;
+  active:     boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export const getNotices = (audience: string) =>
+  apiFetch<Notice[]>(`/api/notices?audience=${encodeURIComponent(audience)}`);
+
+export const getNoticesAdmin = () =>
+  apiFetch<Notice[]>("/api/notices/all");
+
+export const createNotice = (data: { title: string; body: string; audience: string }) =>
+  apiFetch<Notice>("/api/notices", { method: "POST", body: JSON.stringify(data) });
+
+export const updateNotice = (id: string, data: Partial<{ title: string; body: string; audience: string; active: boolean }>) =>
+  apiFetch<Notice>(`/api/notices/${id}`, { method: "PUT", body: JSON.stringify(data) });
+
+export const deleteNotice = (id: string) =>
+  apiFetch<{ status: string }>(`/api/notices/${id}`, { method: "DELETE" });
+
+export const patchNoticeRead = (userId: string, userType: string, noticeId: string, read: boolean) =>
+  apiFetch<{ read_notices: string[] }>("/api/notices/read", {
+    method: "PATCH",
+    body:   JSON.stringify({ user_id: userId, user_type: userType, notice_id: noticeId, read }),
+  });
+
 export const saveActivityCell = (
   realtorId: string,
   weekLabel: string,
