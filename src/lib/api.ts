@@ -350,6 +350,22 @@ export async function patchRoadmapItem(realtorId: string, item: string, complete
   return data.roadmap_completed as string[];
 }
 
+// ── Feedback ───────────────────────────────────────────────────────────────────
+
+export interface FeedbackEntry {
+  id:         string;
+  name:       string;
+  page:       string;
+  message:    string;
+  created_at: string;
+}
+
+export const getFeedback = () =>
+  apiFetch<FeedbackEntry[]>("/api/feedback");
+
+export const deleteFeedback = (id: string) =>
+  apiFetch<{ status: string }>(`/api/feedback/${id}`, { method: "DELETE" });
+
 // ── Notices ────────────────────────────────────────────────────────────────────
 
 export interface Notice {
