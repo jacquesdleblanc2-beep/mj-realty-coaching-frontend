@@ -14,6 +14,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Prevent static prerendering — all pages require auth context at runtime
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "MJ Realty Coaching",
   description: "Weekly coaching platform for MJ Realty",
@@ -30,8 +33,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
-        <FeedbackWidget />
+        <Providers>
+          {children}
+          <FeedbackWidget />
+        </Providers>
       </body>
     </html>
   );
