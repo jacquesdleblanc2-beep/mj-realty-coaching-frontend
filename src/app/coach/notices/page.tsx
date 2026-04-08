@@ -16,26 +16,60 @@ function Spinner() {
   return <div className="w-7 h-7 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />;
 }
 
-const URL_SPLIT = /(https?:\/\/[^\s]+)/g;
-const URL_TEST  = /^https?:\/\//;
-
 function renderBody(body: string) {
-  return body.split("\n").map((line, i) => {
-    if (!line.trim()) return <div key={i} className="h-2" />;
-    const parts = line.split(URL_SPLIT);
-    return (
-      <p key={i} className="text-sm text-teal-700 leading-relaxed">
-        {parts.map((part, j) =>
-          URL_TEST.test(part) ? (
-            <a key={j} href={part} target="_blank" rel="noopener noreferrer"
-               className="text-blue-600 underline hover:text-blue-800 break-all">
-              {part}
-            </a>
-          ) : part
-        )}
-      </p>
+  const lines    = body.split("\n");
+  const elements: React.ReactNode[] = [];
+  const URL_TEST = /https?:\/\/[^\s]+/;
+
+  function renderInline(text: string): React.ReactNode[] {
+    const parts = text.split(/(\*\*[^*]+\*\*|https?:\/\/[^\s]+)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={i} className="font-semibold text-gray-900">{part.slice(2, -2)}</strong>;
+      }
+      if (URL_TEST.test(part)) {
+        return (
+          <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+             className="text-blue-600 underline hover:text-blue-800 break-all">
+            {part}
+          </a>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  }
+
+  lines.forEach((line, i) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      elements.push(<div key={i} className="h-3" />);
+      return;
+    }
+
+    if (trimmed.startsWith("**") && trimmed.endsWith("**") && !trimmed.slice(2, -2).includes("**")) {
+      elements.push(
+        <p key={i} className="text-sm font-semibold text-gray-900 mt-2">{trimmed.slice(2, -2)}</p>
+      );
+      return;
+    }
+
+    if (/^[•\-*]\s/.test(trimmed)) {
+      elements.push(
+        <div key={i} className="flex gap-2 items-start">
+          <span className="text-gray-400 mt-0.5 shrink-0">•</span>
+          <p className="text-sm text-gray-700 leading-relaxed">{renderInline(trimmed.slice(2))}</p>
+        </div>
+      );
+      return;
+    }
+
+    elements.push(
+      <p key={i} className="text-sm text-gray-700 leading-relaxed">{renderInline(trimmed)}</p>
     );
   });
+
+  return elements;
 }
 
 function fmtDate(s: string) {
@@ -79,7 +113,7 @@ function NoticeCard({
 
       {open && (
         <div className="px-5 pb-5 border-t border-teal-100">
-          <div className="pt-4 space-y-2">
+          <div className="pt-4 space-y-1.5">
             {renderBody(notice.body)}
           </div>
           <div className="flex gap-2 mt-4">
