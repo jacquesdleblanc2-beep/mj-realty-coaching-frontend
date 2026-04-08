@@ -16,6 +16,28 @@ function Spinner() {
   return <div className="w-7 h-7 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />;
 }
 
+const URL_SPLIT = /(https?:\/\/[^\s]+)/g;
+const URL_TEST  = /^https?:\/\//;
+
+function renderBody(body: string) {
+  return body.split("\n").map((line, i) => {
+    if (!line.trim()) return <div key={i} className="h-2" />;
+    const parts = line.split(URL_SPLIT);
+    return (
+      <p key={i} className="text-sm text-teal-700 leading-relaxed">
+        {parts.map((part, j) =>
+          URL_TEST.test(part) ? (
+            <a key={j} href={part} target="_blank" rel="noopener noreferrer"
+               className="text-blue-600 underline hover:text-blue-800 break-all">
+              {part}
+            </a>
+          ) : part
+        )}
+      </p>
+    );
+  });
+}
+
 function fmtDate(s: string) {
   return new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
@@ -58,9 +80,7 @@ function NoticeCard({
       {open && (
         <div className="px-5 pb-5 border-t border-teal-100">
           <div className="pt-4 space-y-2">
-            {notice.body.split("\n").filter(Boolean).map((line, i) => (
-              <p key={i} className="text-sm text-teal-700 leading-relaxed">{line}</p>
-            ))}
+            {renderBody(notice.body)}
           </div>
           <div className="flex gap-2 mt-4">
             {!read ? (

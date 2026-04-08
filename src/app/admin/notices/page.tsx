@@ -57,7 +57,7 @@ function NoticeForm({
         placeholder="Body — supports multiple paragraphs (one per line)"
         rows={6}
         className="w-full border border-teal-200 rounded-lg px-3 py-2 text-sm text-teal-800
-                   focus:outline-none focus:border-teal-400 bg-teal-50 resize-y"
+                   focus:outline-none focus:border-teal-400 bg-teal-50 resize-y whitespace-pre-wrap"
       />
       <select
         value={audience} onChange={(e) => setAudience(e.target.value)}
