@@ -154,6 +154,14 @@ export default function CoachRealtorsPage() {
                     <span className="text-teal-300 text-sm shrink-0">→</span>
                   </Link>
 
+                  <a
+                    href={`/coach/realtors/${r.id}/dashboard`}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-white
+                               bg-orange-500 hover:bg-orange-600 px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
+                  >
+                    Realtor® Preview
+                  </a>
+
                   <button
                     onClick={() => setConfirmId(r.id)}
                     className="text-teal-200 hover:text-red-500 transition-colors p-2 shrink-0 text-lg"
