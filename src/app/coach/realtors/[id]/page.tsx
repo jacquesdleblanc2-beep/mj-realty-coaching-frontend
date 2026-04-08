@@ -76,11 +76,10 @@ export default function RealtorDetailPage({ params }: { params: Promise<{ id: st
               </div>
               <a
                 href={`/coach/realtors/${id}/dashboard`}
-                className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800
-                           bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg transition-colors
-                           border border-teal-200 shrink-0 mt-1"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-white
+                           bg-orange-500 hover:bg-orange-600 px-3 py-1.5 rounded-lg transition-colors shrink-0 mt-1"
               >
-                View Dashboard →
+                Preview Realtor
               </a>
             </div>
 

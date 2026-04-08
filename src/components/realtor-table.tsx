@@ -108,8 +108,15 @@ export function RealtorTable({ realtors }: RealtorTableProps) {
                   </span>
                 </td>
 
-                {/* Sheet link */}
-                <td className="py-3 px-4">
+                {/* Preview + sheet link */}
+                <td className="py-3 px-4 whitespace-nowrap">
+                  <a
+                    href={`/coach/realtors/${r.id}/dashboard`}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-white
+                               bg-orange-500 hover:bg-orange-600 px-2.5 py-1 rounded-lg transition-colors mr-2"
+                  >
+                    Preview
+                  </a>
                   {r.folder_url ? (
                     <a
                       href={r.folder_url}

@@ -26,6 +26,16 @@ function currentWeekLabel(): string {
 
 function todayKey(): string { return new Date().toISOString().slice(0, 10); }
 
+function todayLabel(): string {
+  return new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+}
+
+function daysSince(d: string | undefined): string {
+  if (!d) return "never";
+  const diff = Math.floor((Date.now() - new Date(d).getTime()) / 86400000);
+  return diff === 0 ? "today" : diff === 1 ? "1 day ago" : `${diff} days ago`;
+}
+
 function avg(nums: number[]): number {
   if (!nums.length) return 0;
   return Math.round(nums.reduce((a, b) => a + b, 0) / nums.length);
@@ -38,6 +48,18 @@ function streak(history: { percentage: number }[]): number {
     else break;
   }
   return n;
+}
+
+function getGreeting(name: string, pct: number): string {
+  if (pct >= 90) return `${name} is crushing it this week.`;
+  if (pct >= 75) return `Strong week so far for ${name}.`;
+  if (pct >= 60) return `${name} is on track this week.`;
+  if (pct >= 40) return `${name} needs to turn it around this week.`;
+  const day = new Date().getDay();
+  if (day === 1) return `New week for ${name}. Let's see how it goes.`;
+  if (day >= 2 && day <= 4) return `Mid-week check-in for ${name}.`;
+  if (day === 5) return `End-of-week view for ${name}.`;
+  return `Weekend snapshot for ${name}.`;
 }
 
 function shortWeekLabel(wl: string): string {
@@ -96,6 +118,114 @@ function StatsBar({ livePercent, lastWeekPct, avgPct, streakWeeks, loading }: {
   );
 }
 
+// ── Today's focus (read-only) ──────────────────────────────────────────────────
+
+const DAILY_ITEMS = [
+  "Made my prospecting calls",
+  "Followed up with all active clients",
+  "Added value to someone in my network today",
+];
+
+function ReadOnlyTodaysFocus({ progress }: { progress: WeekProgress | null }) {
+  const key   = todayKey();
+  const items = progress?.daily_focus?.[key] ?? [false, false, false];
+  const allDone = items.every(Boolean);
+
+  return (
+    <div className="bg-white border border-teal-200 rounded-xl px-5 py-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <p className="text-sm font-semibold text-teal-800">Today&apos;s focus</p>
+          <p className="text-xs text-teal-400">{todayLabel()}</p>
+        </div>
+        {allDone && (
+          <span className="text-xs text-green-600 font-medium bg-green-50 px-2.5 py-1 rounded-full">
+            All done today! 🎯
+          </span>
+        )}
+      </div>
+      <div className="flex gap-6 flex-wrap">
+        {DAILY_ITEMS.map((label, i) => (
+          <div key={i} className="flex items-center gap-2 text-xs text-teal-700">
+            <span className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center
+                              ${items[i] ? "bg-teal-600 border-teal-600" : "border-teal-200"}`}>
+              {items[i] && (
+                <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                  <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </span>
+            <span className={items[i] ? "line-through text-teal-400" : ""}>{label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Goals tracker (read-only) ──────────────────────────────────────────────────
+
+function ReadOnlyGoalsTracker({ realtor }: { realtor: Realtor }) {
+  const goals   = realtor.yearly_goals;
+  const yearPct = Math.min(100, Math.round(
+    (new Date().getMonth() * 30 + new Date().getDate()) / 365 * 100
+  ));
+
+  function pace(current: number, target: number): { text: string; cls: string } {
+    if (!target) return { text: "No target", cls: "bg-teal-100 text-teal-500" };
+    const pct = (current / target) * 100;
+    if (pct >= yearPct + 10) return { text: "Ahead",      cls: "bg-teal-100 text-teal-700" };
+    if (pct >= yearPct - 5)  return { text: "On Pace",    cls: "bg-green-100 text-green-700" };
+    if (pct >= yearPct - 20) return { text: "Needs Push", cls: "bg-amber-100 text-amber-700" };
+    return                          { text: "Behind",     cls: "bg-red-100 text-red-700" };
+  }
+
+  const rows = [
+    { label: "GCI",          current: realtor.current_gci     ?? 0, target: goals?.conservative_gci ?? 0, fmt: (n: number) => `$${n.toLocaleString()}` },
+    { label: "Total Deals",  current: realtor.current_deals   ?? 0, target: goals?.total_deals  ?? 0, fmt: String },
+    { label: "Buyer Deals",  current: realtor.current_buyers  ?? 0, target: goals?.buyer_deals  ?? 0, fmt: String },
+    { label: "Seller Deals", current: realtor.current_sellers ?? 0, target: goals?.seller_deals ?? 0, fmt: String },
+  ];
+
+  return (
+    <div className="bg-white border border-teal-200 rounded-xl p-5 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-sm font-semibold text-teal-800">2026 Goals — Where they&apos;re at</h2>
+          {realtor.last_goals_updated && (
+            <p className="text-[10px] text-teal-400 mt-0.5">Last updated: {daysSince(realtor.last_goals_updated)}</p>
+          )}
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {rows.map((row) => {
+          const pct = row.target ? Math.min(100, Math.round((row.current / row.target) * 100)) : 0;
+          const { text, cls } = pace(row.current, row.target);
+          return (
+            <div key={row.label} className="bg-teal-50 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] uppercase tracking-wider text-teal-500 font-medium">{row.label}</p>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${cls}`}>{text}</span>
+              </div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="flex-1 bg-teal-200 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-teal-600 h-full rounded-full transition-all duration-500"
+                       style={{ width: `${pct}%` }} />
+                </div>
+                <span className="text-[10px] text-teal-600 font-medium shrink-0">{pct}%</span>
+              </div>
+              <p className="text-xs text-teal-700">
+                <strong>{row.fmt(row.current)}</strong>
+                <span className="text-teal-400"> / {row.fmt(row.target)}</span>
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Read-only task table ───────────────────────────────────────────────────────
 
 const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
@@ -105,10 +235,7 @@ function ReadOnlyTaskTable({ progress }: { progress: WeekProgress }) {
   const byCategory: [string, ProgressTask[]][] = [];
   const seen = new Set<string>();
   for (const t of progress.tasks) {
-    if (!seen.has(t.category)) {
-      seen.add(t.category);
-      byCategory.push([t.category, []]);
-    }
+    if (!seen.has(t.category)) { seen.add(t.category); byCategory.push([t.category, []]); }
     byCategory.find(([c]) => c === t.category)![1].push(t);
   }
 
@@ -126,7 +253,6 @@ function ReadOnlyTaskTable({ progress }: { progress: WeekProgress }) {
             <col style={{ width: "8%" }} />
             <col style={{ width: "7%" }} />
           </colgroup>
-
           <thead>
             <tr className="bg-teal-600">
               <th className="text-left px-4 py-2.5 text-[11px] text-white uppercase tracking-wider font-medium">Task</th>
@@ -137,16 +263,12 @@ function ReadOnlyTaskTable({ progress }: { progress: WeekProgress }) {
               <th className="text-center px-1 py-2.5 text-[11px] text-white uppercase tracking-wider font-medium">✓</th>
             </tr>
           </thead>
-
           <tbody>
             {byCategory.map(([cat, tasks]) => (
               <React.Fragment key={`group-${cat}`}>
                 <tr className="bg-teal-100">
-                  <td colSpan={10} className="px-4 py-1.5 text-[11px] font-medium text-teal-700 uppercase tracking-wider">
-                    {cat}
-                  </td>
+                  <td colSpan={10} className="px-4 py-1.5 text-[11px] font-medium text-teal-700 uppercase tracking-wider">{cat}</td>
                 </tr>
-
                 {tasks.map((t, rowIdx) => {
                   const isCount = t.input_type === "count" || t.type === "count";
                   const ep      = earnedPoints(t);
@@ -157,48 +279,33 @@ function ReadOnlyTaskTable({ progress }: { progress: WeekProgress }) {
                   return (
                     <tr key={t.task} className={rowIdx % 2 === 0 ? "bg-white" : "bg-teal-50"}>
                       <td className="px-4 py-2.5">
-                        <p className={`text-[13px] leading-tight ${t.done ? "text-teal-400 line-through" : "text-teal-800"}`}>
-                          {t.task}
-                        </p>
+                        <p className={`text-[13px] leading-tight ${t.done ? "text-teal-400 line-through" : "text-teal-800"}`}>{t.task}</p>
                         <p className={`text-[10px] mt-0.5 ${ptsCls}`}>
                           {t.done ? `${t.points} / ${t.points} pts ✓` : ep > 0 ? `${ep} / ${t.points} pts` : `0 / ${t.points} pts`}
                           {isCount && !t.done && <span className="text-teal-300 ml-1">(goal: {target})</span>}
                         </p>
                       </td>
-
                       {FULL_DAYS.map((fullDay, di) => {
-                        if (!isCount) {
-                          return (
-                            <td key={WEEK_DAYS[di]} className="text-center px-1 py-2 bg-gray-50 text-gray-300 text-[11px]">—</td>
-                          );
-                        }
+                        if (!isCount) return (
+                          <td key={WEEK_DAYS[di]} className="text-center px-1 py-2 bg-gray-50 text-gray-300 text-[11px]">—</td>
+                        );
                         const val = t.daily_counts?.[fullDay] ?? 0;
                         return (
                           <td key={WEEK_DAYS[di]} className="text-center px-1 py-2">
-                            <span className={`text-[13px] font-medium ${val > 0 ? "text-teal-700" : "text-gray-300"}`}>
-                              {val || "—"}
-                            </span>
+                            <span className={`text-[13px] font-medium ${val > 0 ? "text-teal-700" : "text-gray-300"}`}>{val || "—"}</span>
                           </td>
                         );
                       })}
-
                       <td className="text-center px-1 py-2">
                         {isCount ? (
-                          <span className={`text-[12px] font-medium ${total >= target ? "text-teal-800" : "text-teal-500"}`}>
-                            {total}/{target}
-                          </span>
-                        ) : (
-                          <span className="text-gray-300 text-[11px]">—</span>
-                        )}
+                          <span className={`text-[12px] font-medium ${total >= target ? "text-teal-800" : "text-teal-500"}`}>{total}/{target}</span>
+                        ) : <span className="text-gray-300 text-[11px]">—</span>}
                       </td>
-
                       <td className="text-center px-1 py-2">
-                        <span className={`w-5 h-5 rounded-full border-2 inline-flex items-center justify-center
-                                          ${t.done ? "bg-teal-600 border-teal-600" : "border-teal-200"}`}>
+                        <span className={`w-5 h-5 rounded-full border-2 inline-flex items-center justify-center ${t.done ? "bg-teal-600 border-teal-600" : "border-teal-200"}`}>
                           {t.done && (
                             <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                              <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5"
-                                    strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           )}
                         </span>
@@ -209,7 +316,6 @@ function ReadOnlyTaskTable({ progress }: { progress: WeekProgress }) {
               </React.Fragment>
             ))}
           </tbody>
-
           <tfoot>
             <tr className="border-t border-teal-200 bg-teal-50">
               <td colSpan={10} className="px-4 py-2.5 text-right text-[12px] font-medium text-teal-600">
@@ -259,9 +365,7 @@ function InsightChart({ history, allProgress }: { history: ScoreHistoryEntry[]; 
     return (
       <div className="bg-white border border-teal-200 rounded-xl p-6">
         <h2 className="text-sm font-semibold text-teal-800 mb-1">Performance over time</h2>
-        <p className="text-sm text-teal-400 italic text-center py-8">
-          Trends appear after 2 weeks of data.
-        </p>
+        <p className="text-sm text-teal-400 italic text-center py-8">Trends appear after 2 weeks of data.</p>
       </div>
     );
   }
@@ -271,32 +375,23 @@ function InsightChart({ history, allProgress }: { history: ScoreHistoryEntry[]; 
     return {
       week_label: h.week_label,
       short:      shortWeekLabel(h.week_label),
-      overall:    h.percentage,
       catPcts:    prog ? Object.fromEntries(CATEGORIES.map((c) => [c, computeCategoryPct(prog.tasks, c)])) : null,
     };
   });
 
-  const CHART_H  = 120;
-  const SVG_W    = 600; const SVG_H = CHART_H;
-  const PAD_L    = 32;  const PAD_R = 12;
-  const PAD_T    = 8;   const PAD_B = 24;
-  const plotW    = SVG_W - PAD_L - PAD_R;
-  const plotH    = SVG_H - PAD_T - PAD_B;
-  const GRID     = [100, 75, 50, 25, 0];
+  const CHART_H = 120;
+  const SVG_W = 600; const SVG_H = CHART_H;
+  const PAD_L = 32; const PAD_R = 12; const PAD_T = 8; const PAD_B = 24;
+  const plotW = SVG_W - PAD_L - PAD_R; const plotH = SVG_H - PAD_T - PAD_B;
+  const GRID  = [100, 75, 50, 25, 0];
 
   function xPos(i: number) { return weeks.length < 2 ? PAD_L + plotW / 2 : PAD_L + (i / (weeks.length - 1)) * plotW; }
   function yPos(pct: number) { return PAD_T + plotH - (pct / 100) * plotH; }
   function makePath(pts: number[]) { return pts.map((p, i) => `${i === 0 ? "M" : "L"} ${xPos(i).toFixed(1)} ${yPos(p).toFixed(1)}`).join(" "); }
 
   const isAll    = filter === "all";
-  const lineData = isAll
-    ? CATEGORIES.map((cat) => ({ cat, color: CAT_COLORS[cat], points: weeks.map((w) => w.catPcts?.[cat] ?? 0) }))
-    : [];
-  const barData  = isAll ? [] : weeks.map((w, i) => ({
-    label: w.short,
-    value: w.catPcts?.[filter] ?? 0,
-    color: i === weeks.length - 1 ? "#0D5C63" : "#2d7d74",
-  }));
+  const lineData = isAll ? CATEGORIES.map((cat) => ({ cat, color: CAT_COLORS[cat], points: weeks.map((w) => w.catPcts?.[cat] ?? 0) })) : [];
+  const barData  = isAll ? [] : weeks.map((w, i) => ({ label: w.short, value: w.catPcts?.[filter] ?? 0, color: i === weeks.length - 1 ? "#0D5C63" : "#2d7d74" }));
   const maxBarVal = isAll ? 100 : Math.max(...barData.map((b) => b.value), 1);
 
   return (
@@ -307,9 +402,7 @@ function InsightChart({ history, allProgress }: { history: ScoreHistoryEntry[]; 
           {FILTER_OPTIONS.map((o) => (
             <button key={o.value} onClick={() => setFilter(o.value)}
               className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors font-medium ${
-                filter === o.value
-                  ? "bg-teal-600 text-white border-teal-600"
-                  : "bg-white text-teal-600 border-teal-200 hover:border-teal-400"
+                filter === o.value ? "bg-teal-600 text-white border-teal-600" : "bg-white text-teal-600 border-teal-200 hover:border-teal-400"
               }`}>{o.label}</button>
           ))}
         </div>
@@ -411,6 +504,7 @@ export default function CoachRealtorDashboardPage({ params }: { params: Promise<
   }
   if (status === "unauthenticated") return null;
 
+  const firstName   = (realtor?.name ?? "").split(" ")[0];
   const history     = realtor?.score_history ?? [];
   const last4       = history.slice(-4).map((h) => h.percentage);
   const livePercent = progress?.percentage ?? history.at(-1)?.percentage ?? 0;
@@ -423,20 +517,10 @@ export default function CoachRealtorDashboardPage({ params }: { params: Promise<
   const historyWithCurrent: ScoreHistoryEntry[] = (() => {
     if (!progress) return history;
     const existing = history.find((h) => h.week_label === weekLabel);
-    if (existing) {
-      return history.map((h) =>
-        h.week_label === weekLabel
-          ? { ...h, score: progress.score, percentage: progress.percentage }
-          : h
-      );
-    }
-    return [...history, {
-      week_label:     weekLabel,
-      score:          progress.score,
-      total_possible: progress.total_possible,
-      percentage:     progress.percentage,
-      date:           todayKey(),
-    }];
+    if (existing) return history.map((h) =>
+      h.week_label === weekLabel ? { ...h, score: progress.score, percentage: progress.percentage } : h
+    );
+    return [...history, { week_label: weekLabel, score: progress.score, total_possible: progress.total_possible, percentage: progress.percentage, date: todayKey() }];
   })();
 
   return (
@@ -445,13 +529,14 @@ export default function CoachRealtorDashboardPage({ params }: { params: Promise<
 
       <main className="flex-1 p-8 overflow-auto">
 
-        {/* Breadcrumb */}
-        <div className="mb-5">
-          <a href={`/coach/realtors/${id}`}
-             className="text-xs text-teal-400 hover:text-teal-600 transition-colors">
-            ← Back to {realtor?.name ?? "realtor"}
-          </a>
-        </div>
+        {/* Back button */}
+        <a
+          href={`/coach/realtors/${id}`}
+          className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white
+                     text-sm font-medium px-4 py-2 rounded-xl transition-colors mb-6"
+        >
+          ← Back to Coach View
+        </a>
 
         {/* Read-only banner */}
         <div className="flex items-center gap-2 bg-teal-600 text-white text-xs font-medium
@@ -460,16 +545,18 @@ export default function CoachRealtorDashboardPage({ params }: { params: Promise<
             <circle cx="8" cy="8" r="7" stroke="white" strokeWidth="1.5" />
             <path d="M8 5v3.5M8 11h.01" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
-          You are viewing {realtor?.name ?? "this realtor"}&apos;s dashboard — read only
+          You are viewing {realtor?.name ?? "this realtor"}&apos;s dashboard as them — read only
         </div>
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">{error}</div>
         )}
 
-        {/* Header */}
+        {/* Greeting + week label */}
         <div className="mb-6">
-          <h1 className="text-[22px] font-medium text-teal-800">{realtor?.name ?? "—"}</h1>
+          <h1 className="text-[22px] font-medium text-teal-800 leading-snug">
+            {firstName ? getGreeting(firstName, livePercent) : "—"}
+          </h1>
           <p className="text-sm text-teal-400 mt-1">{weekLabel}</p>
         </div>
 
@@ -482,10 +569,13 @@ export default function CoachRealtorDashboardPage({ params }: { params: Promise<
           loading={false}
         />
 
+        {/* Today's focus */}
+        <ReadOnlyTodaysFocus progress={progress} />
+
         {/* Goals banner */}
         <div className="bg-teal-600 rounded-xl px-5 py-3 mb-6">
           <p className="text-teal-200 text-[11px] uppercase tracking-wider font-medium mb-1.5">
-            Your goals for {realtor?.name ?? "this realtor"} this week
+            Your coach&apos;s goals for you this week
           </p>
           {hasGoals ? (
             <ul className="space-y-0.5">
@@ -497,6 +587,9 @@ export default function CoachRealtorDashboardPage({ params }: { params: Promise<
             <p className="text-teal-300 text-sm italic">No goals set for this week yet.</p>
           )}
         </div>
+
+        {/* Goals tracker */}
+        {realtor && <ReadOnlyGoalsTracker realtor={realtor} />}
 
         {/* Weekly task table */}
         {progress ? (
