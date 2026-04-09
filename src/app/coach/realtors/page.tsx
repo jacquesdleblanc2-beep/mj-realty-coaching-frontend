@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
-import { getCoachRealtors, deleteRealtor, Realtor } from "@/lib/api";
+import { getCoachRealtors, deleteRealtor, patchRealtorNotifications, Realtor } from "@/lib/api";
 import { useCoachId } from "@/lib/useCoachId";
 
 function initials(name: string) {
@@ -23,6 +23,17 @@ export default function CoachRealtorsPage() {
   const [error,     setError]     = useState("");
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [deleting,  setDeleting]  = useState(false);
+
+  async function handleToggleNotifications(id: string, current: boolean) {
+    // Optimistic update
+    setRealtors((prev) => prev.map((r) => r.id === id ? { ...r, email_notifications: !current } : r));
+    try {
+      await patchRealtorNotifications(id, !current);
+    } catch {
+      // Revert on error
+      setRealtors((prev) => prev.map((r) => r.id === id ? { ...r, email_notifications: current } : r));
+    }
+  }
 
   async function handleDelete(id: string) {
     setDeleting(true);
@@ -161,6 +172,16 @@ export default function CoachRealtorsPage() {
                   >
                     Realtor® Preview
                   </a>
+
+                  {/* Notification toggle */}
+                  <button
+                    onClick={() => handleToggleNotifications(r.id, r.email_notifications ?? true)}
+                    title="Weekly email notifications"
+                    className="shrink-0 text-lg leading-none"
+                    aria-label="Toggle email notifications"
+                  >
+                    {(r.email_notifications ?? true) ? "🔔" : "🔕"}
+                  </button>
 
                   <button
                     onClick={() => setConfirmId(r.id)}

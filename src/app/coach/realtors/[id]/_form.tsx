@@ -3,7 +3,7 @@
 // Shared strategy form used by both the detail page and setup page.
 
 import { useState } from "react";
-import { Realtor, Task, YearlyGoals, updateRealtor } from "@/lib/api";
+import { Realtor, Task, YearlyGoals, updateRealtor, patchRealtorNotifications } from "@/lib/api";
 
 // ── Default task list (mirrors config.py COACHING_CHECKLIST) ──────────────────
 
@@ -237,6 +237,7 @@ const PRESETS: Record<string, Preset> = {
 export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSuccess }: StrategyFormProps) {
   const initTasks = autoDetectTasks(realtor.tasks?.length ? realtor.tasks : DEFAULT_TASKS);
 
+  const [emailNotifications, setEmailNotifications] = useState(realtor.email_notifications ?? true);
   const [focus,       setFocus]       = useState(realtor.coaching_focus ?? "");
   const [goals,       setGoals]       = useState(realtor.martin_goals   ?? "");
   const [priorities,  setPriorities]  = useState(realtor.priorities     ?? "");
@@ -353,6 +354,34 @@ export function StrategyForm({ realtor, saveLabel = "Save Changes", onSaveSucces
                 <option value="y5plus">5+ Years</option>
               </select>
             </Field>
+
+            {/* Email notifications toggle — saved immediately on click */}
+            <div className="flex items-center justify-between pt-1">
+              <div>
+                <p className="text-xs text-teal-700 font-medium">Weekly email notifications</p>
+                <p className="text-xs text-teal-400 mt-0.5">Sunday reminders and Monday new week emails</p>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const next = !emailNotifications;
+                  setEmailNotifications(next);
+                  try {
+                    await patchRealtorNotifications(realtor.id, next);
+                  } catch {
+                    setEmailNotifications(!next);
+                  }
+                }}
+                className={`relative inline-flex w-9 h-5 rounded-full transition-colors shrink-0
+                            ${emailNotifications ? "bg-teal-500" : "bg-teal-200"}`}
+                aria-label="Toggle email notifications"
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform
+                              ${emailNotifications ? "translate-x-4" : "translate-x-0"}`}
+                />
+              </button>
+            </div>
           </div>
         </Card>
 

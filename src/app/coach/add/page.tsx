@@ -14,12 +14,13 @@ export default function AddRealtorPage() {
   const router     = useRouter();
   const coachId    = useCoachId();
 
-  const [name,         setName]         = useState("");
-  const [email,        setEmail]        = useState("");
-  const [focus,        setFocus]        = useState("");
-  const [submitting,   setSubmitting]   = useState(false);
-  const [error,        setError]        = useState("");
-  const [success,      setSuccess]      = useState(false);
+  const [name,                  setName]                  = useState("");
+  const [email,                 setEmail]                 = useState("");
+  const [focus,                 setFocus]                 = useState("");
+  const [emailNotifications,    setEmailNotifications]    = useState(true);
+  const [submitting,            setSubmitting]            = useState(false);
+  const [error,                 setError]                 = useState("");
+  const [success,               setSuccess]              = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,10 +29,11 @@ export default function AddRealtorPage() {
     setSubmitting(true);
     try {
       const newRealtor = await createAdminRealtor({
-        name:            name.trim(),
-        email:           email.trim().toLowerCase(),
-        coach_id:        coachId,
-        coaching_focus:  focus.trim() || "General coaching",
+        name:                name.trim(),
+        email:               email.trim().toLowerCase(),
+        coach_id:            coachId,
+        coaching_focus:      focus.trim() || "General coaching",
+        email_notifications: emailNotifications,
       });
       if (!newRealtor.id) {
         console.error("createAdminRealtor returned no id:", newRealtor);
@@ -122,6 +124,26 @@ export default function AddRealtorPage() {
                                px-4 py-2.5 text-sm text-teal-800 focus:outline-none transition-colors
                                placeholder:text-teal-300"
                   />
+                </div>
+
+                {/* Email notifications toggle */}
+                <div className="flex items-center justify-between py-1">
+                  <div>
+                    <p className="text-xs text-teal-700 font-medium">Weekly email notifications</p>
+                    <p className="text-xs text-teal-400 mt-0.5">Send Sunday reminders and Monday new week emails</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEmailNotifications((v) => !v)}
+                    className={`relative inline-flex w-9 h-5 rounded-full transition-colors shrink-0
+                                ${emailNotifications ? "bg-teal-500" : "bg-teal-200"}`}
+                    aria-label="Toggle email notifications"
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform
+                                  ${emailNotifications ? "translate-x-4" : "translate-x-0"}`}
+                    />
+                  </button>
                 </div>
 
                 {error && (

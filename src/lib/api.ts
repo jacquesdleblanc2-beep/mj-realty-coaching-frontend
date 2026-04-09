@@ -53,7 +53,8 @@ export interface Realtor {
   weekly_hours?:       number | null;
   experience_level?:   string | null;
   roadmap_completed?:  string[];
-  coach_id?:           string | null;
+  coach_id?:              string | null;
+  email_notifications?:   boolean;
 }
 
 export interface NewRealtorInput {
@@ -187,7 +188,7 @@ export const deleteAdminCoach = (id: string) =>
 export const updateAdminCoach = (id: string, data: Partial<{ name: string; email: string; active: boolean }>) =>
   apiFetch<AdminCoach>(`/api/admin/coaches/${id}`, { method: "PATCH", body: JSON.stringify(data) });
 
-export const createAdminRealtor = (data: { name: string; email: string; coach_id?: string; coaching_focus?: string }) =>
+export const createAdminRealtor = (data: { name: string; email: string; coach_id?: string; coaching_focus?: string; email_notifications?: boolean }) =>
   apiFetch<AdminRealtor>("/api/admin/realtors", { method: "POST", body: JSON.stringify(data) });
 
 export const deleteAdminRealtor = (id: string) =>
@@ -271,6 +272,12 @@ export const updateRealtor = (id: string, data: UpdateRealtorInput) =>
 export const deleteRealtor = (id: string) =>
   apiFetch<{ status: string; id: string }>(`/api/realtors/${id}`, {
     method: "DELETE",
+  });
+
+export const patchRealtorNotifications = (realtorId: string, enabled: boolean) =>
+  apiFetch<Realtor>(`/api/realtors/${realtorId}/notifications`, {
+    method: "PATCH",
+    body:   JSON.stringify({ enabled }),
   });
 
 export const getRealtorHistory = (id: string) =>
