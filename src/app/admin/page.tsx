@@ -441,6 +441,11 @@ export default function AdminPage() {
           </span>
         </div>
         <div className="flex items-center gap-4">
+          <a href="/admin/notifications"
+             className="text-sm text-teal-600 hover:text-teal-800 border border-teal-200
+                        px-4 py-2 rounded-lg transition-colors">
+            Auto Notifications →
+          </a>
           <a href="/admin/feedback"
              className="text-sm text-teal-600 hover:text-teal-800 border border-teal-200
                         px-4 py-2 rounded-lg transition-colors">
