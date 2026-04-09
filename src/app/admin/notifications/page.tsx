@@ -2,7 +2,7 @@
 
 // src/app/admin/notifications/page.tsx — Auto Notifications (super-admin only)
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -21,8 +21,31 @@ const TEMPLATES: Template[] = [
     title:       "New Realtor® Welcome Email",
     description: "Sent automatically when a coach creates a new Realtor® account",
     fires:       "On realtor creation",
-    subject:     "Welcome to MJ Realty Coaching Platform, {name}!",
-    body:        "Sent to the new realtor's email address with login instructions and platform link.",
+    subject:     "Welcome to MJ Realty Coaching, {name} — You're all set!",
+    body:
+`Hi {name},
+
+Your coaching account is ready. Here's everything you need to get started.
+
+Log in here: https://mj-realty-coaching-frontend.vercel.app
+
+Use the Google account linked to this email address to sign in.
+
+What to expect:
+- Your coach has set up your profile and weekly tasks
+- Every Monday morning your weekly checklist resets — that's your weekly scorecard
+- Check your Dashboard to track your progress, goals, and performance over time
+- Head to My Roadmap to see your career milestones
+
+Your first week:
+Check in Monday morning — your first weekly checklist will be waiting for you. Fill in your daily activity counts and check off completed tasks throughout the week.
+
+If you have any questions reach out to your coach directly.
+
+Welcome to the team — let's build something great.
+
+Martin LeBlanc
+MJ Realty Coaching`,
   },
   {
     title:       "New Coach Welcome Email",
@@ -50,6 +73,7 @@ const TEMPLATES: Template[] = [
 export default function NotificationsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [selected, setSelected] = useState<Template | null>(null);
 
   const email = session?.user?.email ?? "";
 
@@ -72,10 +96,10 @@ export default function NotificationsPage() {
   if (status === "unauthenticated") return null;
 
   return (
-    <div className="min-h-screen bg-teal-50">
+    <div className="min-h-screen bg-teal-50 flex flex-col">
 
       {/* Header */}
-      <header className="bg-white border-b border-teal-200 px-6 py-3 flex items-center gap-4">
+      <header className="bg-white border-b border-teal-200 px-6 py-3 flex items-center gap-4 shrink-0">
         <a
           href="/admin"
           className="text-xs text-teal-400 hover:text-teal-600 transition-colors"
@@ -85,39 +109,86 @@ export default function NotificationsPage() {
         <h1 className="text-sm font-semibold text-teal-800">Auto Notifications</h1>
       </header>
 
-      {/* Content */}
-      <div className="p-8 max-w-3xl">
-
-        {/* Info banner */}
-        <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-xl text-sm text-teal-700">
+      {/* Info banner */}
+      <div className="px-6 pt-5 pb-0 shrink-0">
+        <div className="p-4 bg-white border border-teal-200 rounded-xl text-sm text-teal-700 max-w-5xl">
           Email templates are currently hardcoded. Editing will be enabled in a future update.
         </div>
+      </div>
 
-        {/* Template cards */}
-        <div className="space-y-4">
-          {TEMPLATES.map((t) => (
-            <div
-              key={t.title}
-              className="bg-white border border-teal-200 rounded-xl p-6 space-y-3"
-            >
-              {/* Title */}
-              <p className="font-semibold text-teal-800 text-sm">{t.title}</p>
+      {/* Master-detail */}
+      <div className="flex flex-row flex-1 overflow-hidden max-w-5xl w-full mx-0 mt-5 ml-6 mb-6
+                      bg-white border border-teal-200 rounded-xl overflow-hidden shadow-sm"
+           style={{ maxWidth: "64rem", height: "calc(100vh - 148px)" }}>
 
-              {/* Description */}
-              <p className="text-xs text-gray-500">{t.description}</p>
+        {/* Left — list */}
+        <div className="w-72 shrink-0 border-r border-teal-200 overflow-y-auto">
+          {TEMPLATES.map((t) => {
+            const isSelected = selected?.title === t.title;
+            return (
+              <button
+                key={t.title}
+                onClick={() => setSelected(t)}
+                className={`w-full text-left px-5 py-4 border-b border-teal-100 transition-colors
+                            flex items-start justify-between gap-3
+                            ${isSelected
+                              ? "bg-teal-50 border-l-2 border-l-teal-600"
+                              : "hover:bg-teal-50 border-l-2 border-l-transparent"}`}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium truncate ${isSelected ? "text-teal-800" : "text-teal-700"}`}>
+                    {t.title}
+                  </p>
+                  <span className="inline-block mt-1.5 text-xs bg-teal-100 text-teal-600 px-2 py-0.5 rounded-full">
+                    {t.fires}
+                  </span>
+                </div>
+                <span className="text-teal-300 text-sm mt-0.5 shrink-0">→</span>
+              </button>
+            );
+          })}
+        </div>
 
-              {/* When it fires pill */}
+        {/* Right — detail */}
+        <div className="flex-1 p-8 overflow-y-auto">
+          {selected === null ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-sm text-teal-300">Select a template to preview</p>
+            </div>
+          ) : (
+            <div className="space-y-5 max-w-xl">
+              {/* Title + description */}
+              <div>
+                <h2 className="text-base font-semibold text-teal-800">{selected.title}</h2>
+                <p className="text-xs text-gray-500 mt-1">{selected.description}</p>
+              </div>
+
+              {/* Fires pill */}
               <span className="inline-block text-xs bg-teal-100 text-teal-600 px-2.5 py-1 rounded-full font-medium">
-                {t.fires}
+                {selected.fires}
               </span>
 
-              {/* Template preview */}
-              <textarea
-                readOnly
-                value={`Subject: ${t.subject}\n\n${t.body}`}
-                className="w-full h-24 bg-teal-50 border border-teal-200 rounded-lg p-4
-                           text-sm text-teal-700 resize-none focus:outline-none"
-              />
+              {/* Subject */}
+              <div>
+                <label className="block text-xs font-medium text-teal-600 mb-1.5">Subject</label>
+                <input
+                  readOnly
+                  value={selected.subject}
+                  className="w-full bg-teal-50 border border-teal-200 rounded-lg px-4 py-2.5
+                             text-sm text-teal-700 focus:outline-none"
+                />
+              </div>
+
+              {/* Body */}
+              <div>
+                <label className="block text-xs font-medium text-teal-600 mb-1.5">Body</label>
+                <textarea
+                  readOnly
+                  value={selected.body}
+                  className="w-full h-64 bg-teal-50 border border-teal-200 rounded-lg p-4
+                             text-sm text-teal-700 resize-none focus:outline-none"
+                />
+              </div>
 
               {/* Actions */}
               <div className="flex gap-3">
@@ -138,7 +209,7 @@ export default function NotificationsPage() {
                 </button>
               </div>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
