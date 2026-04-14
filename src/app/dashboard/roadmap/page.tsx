@@ -37,7 +37,7 @@ const ROADMAP_DATA: RoadmapLevel[] = [
     id:       "new",
     label:    "New Realtor",
     subtitle: "Year 0–1 · Build your foundation and close your first deals",
-    badges:   ["Brand Ready", "First 50 Contacts", "First Client", "First Deal", "Real Academy Graduate"],
+    badges:   ["Getting Started", "Building Momentum", "Halfway There", "Almost Done", "Level Complete"],
     groups: [
       {
         name: "Brand & online presence",
@@ -60,8 +60,11 @@ const ROADMAP_DATA: RoadmapLevel[] = [
           item("Order professional business cards"),
           item("Set up a dedicated real estate email address"),
           item("Record a professional voicemail greeting"),
+          item("Download and set up the Supra eKey app"),
+          item("Download and set up the Touchbase app"),
+          item("Download the Realtor®.ca app (black logo)"),
           item("Set up a CRM and load your sphere of influence (min. 50 contacts)"),
-          item("Write your 90-day business plan with GCI target"),
+          item("Write your 90-day business plan"),
           item("Time-block your weekly schedule (prospecting, follow-up, admin)"),
           item("Open a dedicated business bank account"),
           item("Set up basic expense tracking (income vs. costs)"),
@@ -133,7 +136,7 @@ const ROADMAP_DATA: RoadmapLevel[] = [
     id:       "y12",
     label:    "1–2 Years",
     subtitle: "Year 1–2 · Build systems, grow your database, win more listings",
-    badges:   ["5 Deals Closed", "Database 200+", "First Listing Won", "Review Collector", "Referral Machine"],
+    badges:   ["Getting Started", "Building Momentum", "Halfway There", "Almost Done", "Level Complete"],
     groups: [
       {
         name: "Production & pipeline",
@@ -216,7 +219,7 @@ const ROADMAP_DATA: RoadmapLevel[] = [
     id:       "y35",
     label:    "3–5 Years",
     subtitle: "Year 3–5 · Become a market authority and build leverage",
-    badges:   ["20 Deals/Year", "Local Expert", "Content Creator", "Top Producer", "Team Ready"],
+    badges:   ["Getting Started", "Building Momentum", "Halfway There", "Almost Done", "Level Complete"],
     groups: [
       {
         name: "Production & revenue",
@@ -298,7 +301,7 @@ const ROADMAP_DATA: RoadmapLevel[] = [
     id:       "y5plus",
     label:    "5+ Years",
     subtitle: "Year 5+ · Scale, invest, lead and build your legacy",
-    badges:   ["Team Leader", "Real Investor", "Mentor", "Market Authority", "Legacy Builder"],
+    badges:   ["Getting Started", "Building Momentum", "Halfway There", "Almost Done", "Level Complete"],
     groups: [
       {
         name: "Scale & team",
