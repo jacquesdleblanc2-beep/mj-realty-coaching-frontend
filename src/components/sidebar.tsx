@@ -23,13 +23,14 @@ const realtorNav = [
 ];
 
 const adminNav = [
-  { label: "Overview",     href: "/coach",            dot: null },
-  { label: "Notices",      href: "/coach/notices",    dot: null },
-  { label: "My Realtors",  href: "/coach/realtors",   dot: null },
-  { label: "Reports",      href: "/coach/reports",    dot: null },
-  { label: "Send History", href: "/coach/history",    dot: null },
-  { label: "Pipeline",     href: "/coach/scheduler",  dot: null },
-  { label: "Add Realtor®", href: "/coach/add",        dot: null },
+  { label: "Overview",     href: "/coach",              dot: null },
+  { label: "Notices",      href: "/coach/notices",      dot: null },
+  { label: "My Realtors",  href: "/coach/realtors",     dot: null },
+  { label: "Reports",      href: "/coach/reports",      dot: null },
+  { label: "Send History", href: "/coach/history",      dot: null },
+  { label: "Pipeline",     href: "/coach/scheduler",    dot: null },
+  { label: "Roadmap",      href: "/coach/roadmap",      dot: null },
+  { label: "Add Realtor®", href: "/coach/add",          dot: null },
 ];
 
 export function Sidebar({ role }: SidebarProps) {
