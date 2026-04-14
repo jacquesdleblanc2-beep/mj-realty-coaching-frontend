@@ -1,13 +1,13 @@
 "use client";
 
-// src/app/admin/roadmap/page.tsx — Roadmap Analytics
+// src/app/admin/roadmap/page.tsx — Roadmap Analytics (super-admin only)
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Sidebar } from "@/components/sidebar";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API          = process.env.NEXT_PUBLIC_API_URL;
+const SUPER_ADMIN  = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL;
 
 interface ItemStat {
   text:     string;
@@ -26,20 +26,21 @@ export default function AdminRoadmapPage() {
   const [filter,   setFilter]   = useState<"all" | "hot" | "cold">("all");
   const [levelTab, setLevelTab] = useState<string>("all");
 
+  const email = session?.user?.email ?? "";
+
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/"); return; }
     if (status !== "authenticated")   return;
-    const email = session?.user?.email;
-    if (email !== process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL) { router.push("/"); return; }
+    if (SUPER_ADMIN && email.toLowerCase() !== SUPER_ADMIN.toLowerCase()) {
+      router.push("/");
+      return;
+    }
 
     fetch(`${API}/api/realtors`)
       .then((r) => r.json())
       .then((realtors: { name: string; roadmap_completed: Record<string, string[]> | string[] }[]) => {
-        // Build a map: itemText -> { count, realtors }
         const map: Record<string, { count: number; realtors: string[] }> = {};
-
         for (const realtor of realtors) {
-          // roadmap_completed may be a flat array or a keyed object
           let items: string[] = [];
           if (Array.isArray(realtor.roadmap_completed)) {
             items = realtor.roadmap_completed;
@@ -52,8 +53,6 @@ export default function AdminRoadmapPage() {
             map[text].realtors.push(realtor.name);
           }
         }
-
-        // Map item text back to group/level using hardcoded structure
         const result: ItemStat[] = ITEM_INDEX.map(({ text, group, level }) => ({
           text,
           group,
@@ -61,14 +60,13 @@ export default function AdminRoadmapPage() {
           count:    map[text]?.count    ?? 0,
           realtors: map[text]?.realtors ?? [],
         }));
-
         setStats(result);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [status, session, router]);
+  }, [status, email, router]);
 
-  const levels = ["all", "New Realtor", "1–2 Years", "3–5 Years", "5+ Years"];
+  const levels  = ["all", "New Realtor", "1–2 Years", "3–5 Years", "5+ Years"];
 
   const filtered = stats
     .filter((s) => levelTab === "all" || s.level === levelTab)
@@ -94,22 +92,45 @@ export default function AdminRoadmapPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-teal-50">
-      <Sidebar role="admin" />
+    <div className="min-h-screen bg-teal-50">
 
-      <main className="flex-1 p-8 overflow-y-auto">
+      {/* Top nav — matches all other admin pages */}
+      <header className="bg-white border-b border-teal-200 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center shrink-0">
+            <span className="text-white font-bold text-xs">MJ</span>
+          </div>
+          <span className="font-semibold text-teal-800 text-sm">Admin</span>
+          <span className="text-xs text-teal-300 border border-teal-200 px-2 py-0.5 rounded-full ml-1">
+            super-admin
+          </span>
+        </div>
+        <div className="flex items-center gap-4">
+          <a href="/admin"
+             className="text-sm text-teal-600 hover:text-teal-800 border border-teal-200 px-4 py-2 rounded-lg transition-colors">
+            ← Back to Admin
+          </a>
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="text-xs text-teal-400 hover:text-red-500 transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
+      </header>
+
+      <main className="p-8 max-w-7xl mx-auto">
 
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-teal-800">Roadmap Analytics</h1>
           <p className="text-sm text-teal-500 mt-1">
-            See which milestones realtors check most — and which get ignored.
+            Which milestones realtors check most — and which get ignored.
             {totalRealtors > 0 && ` Based on ${totalRealtors} realtor${totalRealtors > 1 ? "s" : ""}.`}
           </p>
         </div>
 
         {/* Filters */}
-        <div className="flex gap-3 flex-wrap mb-6">
-          {/* Level tabs */}
+        <div className="flex gap-3 flex-wrap items-center mb-6">
           <div className="flex gap-2 flex-wrap">
             {levels.map((l) => (
               <button
@@ -124,8 +145,6 @@ export default function AdminRoadmapPage() {
               </button>
             ))}
           </div>
-
-          {/* Hot/cold filter */}
           <div className="flex gap-2 ml-auto">
             {(["all", "hot", "cold"] as const).map((f) => (
               <button
@@ -184,11 +203,9 @@ export default function AdminRoadmapPage() {
                     <span className="text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">{s.level}</span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    {s.count > 0 ? (
-                      <span className="font-semibold text-teal-700">{s.count}</span>
-                    ) : (
-                      <span className="text-gray-300">—</span>
-                    )}
+                    {s.count > 0
+                      ? <span className="font-semibold text-teal-700">{s.count}</span>
+                      : <span className="text-gray-300">—</span>}
                   </td>
                   <td className="px-4 py-3 text-xs text-teal-400">
                     {s.realtors.length > 0 ? s.realtors.join(", ") : "—"}
@@ -204,11 +221,8 @@ export default function AdminRoadmapPage() {
   );
 }
 
-// ── Item index (text → group → level) ─────────────────────────────────────────
-// Mirrors ROADMAP_DATA — kept here so the admin page has no import dependency on the realtor page
-
+// ── Item index ─────────────────────────────────────────────────────────────────
 const ITEM_INDEX: { text: string; group: string; level: string }[] = [
-  // New Realtor
   ...["Get professional headshots","Write a compelling personal bio","Set up a Google Business Profile","Create an Instagram account (real estate focused)","Create a Facebook business page","Create or update your LinkedIn profile","Set up a personal real estate website or landing page","Post your introduction announcement on all social channels","Film and post your first property tour video","Post 3 pieces of valuable local market content on social media"].map((t) => ({ text: t, group: "Brand & online presence", level: "New Realtor" })),
   ...["Order professional business cards","Set up a dedicated real estate email address","Record a professional voicemail greeting","Download and set up the Supra eKey app","Download and set up the Touchbase app","Download the Realtor®.ca app (black logo)","Set up a CRM and load your sphere of influence (min. 50 contacts)","Write your 90-day business plan","Time-block your weekly schedule (prospecting, follow-up, admin)","Open a dedicated business bank account","Set up basic expense tracking (income vs. costs)","Send your \"I am now a Realtor®\" announcement to your sphere"].map((t) => ({ text: t, group: "Business setup", level: "New Realtor" })),
   ...["Preview 15+ active listings across your market","Complete 5 comparative market analyses (CMAs)","Study local MLS stats: avg days on market, avg price, absorption rate","Attend 3+ open houses as an observer and take notes","Choose your geographic farm area or niche","Learn your transaction process from offer to close","Build a vendor contact list (lenders, inspectors, notaries, lawyers)","Shadow an experienced agent on a listing appointment","Shadow an experienced agent on a buyer showing"].map((t) => ({ text: t, group: "Market knowledge", level: "New Realtor" })),
@@ -216,8 +230,6 @@ const ITEM_INDEX: { text: string; group: string; level: string }[] = [
   ...["Practice your buyer consultation script 5 times (role play)","Practice your listing presentation 5 times (role play)","Complete your brokerage onboarding training fully","Attend 2 REALTOR® board or networking events","Complete 1 negotiation or objection handling course","Read 1 real estate sales or mindset book"].map((t) => ({ text: t, group: "Skills & presentations", level: "New Realtor" })),
   ...["Complete your first buyer representation agreement","Write your first offer","Take your first listing","Close your first transaction","Ask your first closed client for a written review","Get your first inbound referral from someone in your sphere"].map((t) => ({ text: t, group: "First deals", level: "New Realtor" })),
   ...["Log in to Real Academy and complete your profile","Complete the New Agent Starter Series (12-week program)","Complete 5 courses in the New Agents category","Attend 1 live Real Academy session or virtual event","Complete 4 courses of your choice in the Career Journey section"].map((t) => ({ text: t, group: "Real Academy — new agent track", level: "New Realtor" })),
-
-  // 1–2 Years
   ...["Close 5+ transactions in a 12-month period","Take 3+ listings (seller side) in a year","Have a full pipeline 60 days out at all times","Track your lead-to-close conversion rate","Calculate your cost per lead by source","Review your production numbers monthly and adjust strategy"].map((t) => ({ text: t, group: "Production & pipeline", level: "1–2 Years" })),
   ...["Grow your CRM database to 200+ contacts","Run a consistent monthly touch campaign to your full database","Set up automated follow-up sequences for new leads","Segment your database (A, B, C clients and hot, warm, cold leads)","Track every active lead with a pipeline stage","Ask every closed client for a referral at closing"].map((t) => ({ text: t, group: "Database & CRM mastery", level: "1–2 Years" })),
   ...["Post consistently 3x per week on social media for 90 days straight","Collect 10+ Google or Zillow reviews","Launch a monthly real estate e-newsletter to your database","Run your first paid social media ad (listings or lead gen)","Film and post 5+ property tour or market update videos","Get featured in a local blog, newspaper, or community page"].map((t) => ({ text: t, group: "Marketing & brand", level: "1–2 Years" })),
@@ -225,8 +237,6 @@ const ITEM_INDEX: { text: string; group: string; level: string }[] = [
   ...["Set your GCI target for year 2 higher than year 1","Set up quarterly tax payments as self-employed","Build a 3-month personal expense reserve fund","Understand your commission structure and renegotiate if eligible","Track return on investment for every marketing dollar spent","Meet with a financial advisor about retirement and wealth planning"].map((t) => ({ text: t, group: "Financial & business", level: "1–2 Years" })),
   ...["Join a mastermind, accountability group, or agent network","Build vendor relationships with 2 lenders, 2 inspectors, 1 lawyer","Receive 5+ inbound referrals in a year from your network","Attend a regional real estate conference or summit","Connect with and learn from a top producer in your market","Meet with your coach or mentor at least monthly"].map((t) => ({ text: t, group: "Network & referrals", level: "1–2 Years" })),
   ...["Complete 5 courses in the Career Journey Experienced Agent section","Attend 5 Community Masterminds on Real Academy","Complete 1 marketing or lead generation course","Attend a Beyond RISE or major Real Academy virtual event"].map((t) => ({ text: t, group: "Real Academy — experienced agent track", level: "1–2 Years" })),
-
-  // 3–5 Years
   ...["Close 20+ transactions in a single year","Take 3+ listings (seller side) in a year","Generate 50%+ of your business from referrals and repeat clients","Achieve your target GCI consistently for 2 years in a row","Earn a top producer award at your brokerage or board","Rank in the top 10% of your local market by volume"].map((t) => ({ text: t, group: "Production & revenue", level: "3–5 Years" })),
   ...["Publish a monthly market report (written or video) for your farm","Be quoted or featured in a local media article","Speak on a panel or at a local industry event","Be recognized as the go-to agent for your neighborhood or niche","Build a neighborhood-specific social media presence or page","Host a community event or client appreciation event"].map((t) => ({ text: t, group: "Market authority", level: "3–5 Years" })),
   ...["Build an email list of 500+ past clients and warm leads","Run a consistent YouTube, Instagram Reels, or video content strategy","Launch a retargeting ad campaign to past website visitors","Track and report ROI on all marketing channels monthly","Partner with a local business for co-marketing or sponsorship","Test one new lead generation channel and measure results for 90 days"].map((t) => ({ text: t, group: "Advanced marketing", level: "3–5 Years" })),
@@ -234,8 +244,6 @@ const ITEM_INDEX: { text: string; group: string; level: string }[] = [
   ...["Complete an advanced designation (ABR, SRS, CNE, SRES, etc.)","Become certified in a niche (luxury, investment, first-time buyers)","Master one lead generation channel deeply","Write or record a definitive guide to buying or selling in your market","Build a referral partnership with an out-of-market agent"].map((t) => ({ text: t, group: "Designations & specialization", level: "3–5 Years" })),
   ...["Formally mentor a newer agent at your brokerage","Explore the team vs. solo agent model with a business plan","Bring on a buyer's agent partner or admin if volume supports it","Attend a national real estate conference","Create a personal succession plan for your business"].map((t) => ({ text: t, group: "Team & mentorship", level: "3–5 Years" })),
   ...["Complete 5 courses in Career Journey Advanced or Team Leader section","Attend 5 additional Community Masterminds","Complete a course on team building or agent attraction","Attend a Real Brokerage all-agent event such as RISE","Contribute or present content in a Real community session"].map((t) => ({ text: t, group: "Real Academy — leadership track", level: "3–5 Years" })),
-
-  // 5+ Years
   ...["Build a team of 2+ licensed agents with a written team agreement","Create an agent onboarding and training program for your team","Define your team model (rainmaker, partner-based, etc.)","Hit a team GCI milestone ($500K, $1M, or your personal target)","Hire a dedicated marketing coordinator or agency","Develop your team culture, values, and vision document"].map((t) => ({ text: t, group: "Scale & team", level: "5+ Years" })),
   ...["Hire a professional real estate coach (Tom Ferry, Ninja Selling, etc.)","Join a peer accountability group or mastermind at the national level","Set a formal coaching goal and track it monthly for a full year","Invest in at least one business retreat or intensive per year","Read or listen to 12+ business or leadership books per year"].map((t) => ({ text: t, group: "Coaching & accountability", level: "5+ Years" })),
   ...["Purchase your first investment property","Analyze deals using cap rate and cash-on-cash return","Build a relationship with an investor-focused lender","Join a local real estate investors group or association","Explore commercial real estate or multi-family opportunities","Build a personal real estate investment portfolio plan"].map((t) => ({ text: t, group: "Real estate investing", level: "5+ Years" })),
