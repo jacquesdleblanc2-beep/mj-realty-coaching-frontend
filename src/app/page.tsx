@@ -50,10 +50,10 @@ export default function Home() {
 
       {/* Logo */}
       <div className="flex items-center gap-3 mb-10">
-        <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center shrink-0">
-          <span className="text-white font-bold text-base select-none">MJ</span>
+        <div className="flex flex-col">
+          <span className="font-bold text-[#0D5C63] text-2xl leading-none tracking-tight">NBR</span>
+          <span className="text-[#0D5C63] text-xs font-normal opacity-70 mt-0.5">Onboarding</span>
         </div>
-        <span className="text-teal-800 font-semibold text-xl">MJ Realty</span>
       </div>
 
       {/* Headline */}
@@ -95,7 +95,7 @@ export default function Home() {
 
       {/* Footer */}
       <p className="absolute bottom-6 text-xs text-teal-300">
-        © {new Date().getFullYear()} MJ Realty Coaching Platform
+        © {new Date().getFullYear()} NBR
       </p>
     </div>
   )

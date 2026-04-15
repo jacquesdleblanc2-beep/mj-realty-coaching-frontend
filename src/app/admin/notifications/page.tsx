@@ -24,7 +24,7 @@ const TEMPLATES: Template[] = [
     description: "Sent automatically when a coach creates a new Realtor® account",
     fires:       "On realtor creation",
     testPath:    "/api/feedback/test/welcome-realtor",
-    subject:     "Welcome to MJ Realty Coaching, {name} — You're all set!",
+    subject:     "Welcome to NBR, {name} — You're all set!",
     body:
 `Hi {name},
 
@@ -48,18 +48,18 @@ If you have any questions reach out to your coach directly.
 Welcome to the team — let's build something great.
 
 {coach_name}
-MJ Realty Coaching`,
+NBR`,
   },
   {
     title:       "New Coach Welcome Email",
     description: "Sent automatically when a new coach account is created",
     fires:       "On coach creation",
     testPath:    "/api/feedback/test/welcome-coach",
-    subject:     "Welcome to MJ Realty Coaching — Your Coach Account is Ready, {name}!",
+    subject:     "Welcome to NBR — Your Coach Account is Ready, {name}!",
     body:
 `Hi {name},
 
-Your coach account on the MJ Realty Coaching Platform is set up and ready to go.
+Your coach account on the NBR is set up and ready to go.
 
 Log In to Your Dashboard: https://mj-realty-coaching-frontend.vercel.app
 
@@ -80,7 +80,7 @@ If you have any questions reach out to Jacques directly.
 Welcome aboard — let's build a great team.
 
 Jacques LeBlanc
-MJ Realty Coaching`,
+NBR`,
   },
   {
     title:       "Sunday Reminder Email",
@@ -97,7 +97,7 @@ Don't leave points on the table. Log in and finish strong.
 
 → Update My Checklist: https://mj-realty-coaching-frontend.vercel.app
 
-{coach_name} · MJ Realty Coaching`,
+{coach_name} · NBR`,
   },
   {
     title:       "Monday New Week Email",
@@ -119,7 +119,7 @@ Missed last week's data entry?
 Log into your account and go to My Week → History to update your previous week's activity before it's too late.
 ────────────────────────────────────
 
-{coach_name} · MJ Realty Coaching`,
+{coach_name} · NBR`,
   },
 ];
 

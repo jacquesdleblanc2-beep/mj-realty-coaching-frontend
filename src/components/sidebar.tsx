@@ -13,29 +13,76 @@ interface SidebarProps {
   role: "realtor" | "admin";
 }
 
-const realtorNav = [
-  { label: "Dashboard",  href: "/dashboard",          dot: null },
-  { label: "My Roadmap", href: "/dashboard/roadmap",  dot: null },
-  { label: "Notices",    href: "/dashboard/notices",  dot: null },
-  { label: "History",    href: "/dashboard/history",  dot: null },
-  { label: "Profile",    href: "/dashboard/profile",  dot: null },
-  { label: "Help",       href: "/dashboard/help",     dot: null },
+// ── Coach nav (unchanged) ──────────────────────────────────────────────────────
+
+const coachNav = [
+  { label: "Overview",     href: "/coach" },
+  { label: "Notices",      href: "/coach/notices" },
+  { label: "My Realtors",  href: "/coach/realtors" },
+  { label: "Reports",      href: "/coach/reports" },
+  { label: "Send History", href: "/coach/history" },
+  { label: "Pipeline",     href: "/coach/scheduler" },
+  { label: "Add Realtor®", href: "/coach/add" },
 ];
 
-const adminNav = [
-  { label: "Overview",     href: "/coach",              dot: null },
-  { label: "Notices",      href: "/coach/notices",      dot: null },
-  { label: "My Realtors",  href: "/coach/realtors",     dot: null },
-  { label: "Reports",      href: "/coach/reports",      dot: null },
-  { label: "Send History", href: "/coach/history",      dot: null },
-  { label: "Pipeline",     href: "/coach/scheduler",    dot: null },
-  { label: "Add Realtor®", href: "/coach/add",        dot: null },
+// ── Realtor nav structure ──────────────────────────────────────────────────────
+
+interface NavItem {
+  label:    string;
+  href:     string;
+  sub?:     { label: string; href: string }[];
+  section?: string; // starts a new section
+}
+
+const realtorNav: NavItem[] = [
+  {
+    label: "Initial Setup",
+    href:  "/dashboard/setup",
+    sub: [
+      { label: "Overview",      href: "/dashboard/setup" },
+      { label: "Licensing",     href: "/dashboard/licensing" },
+      { label: "Systems Setup", href: "/dashboard/systems" },
+      { label: "Notices",       href: "/dashboard/notices" },
+    ],
+  },
+  {
+    label: "Roadmap",
+    href:  "/dashboard/roadmap",
+    sub: [
+      { label: "My Career Path",    href: "/dashboard/roadmap" },
+      { label: "Finding My Niche",  href: "/dashboard/niche" },
+      { label: "Finding My System", href: "/dashboard/system" },
+    ],
+  },
+  {
+    label:   "My Coaching",
+    href:    "/dashboard/coaching",
+    section: "MY COACHING",
+  },
 ];
+
+// ── Logo ───────────────────────────────────────────────────────────────────────
+
+function NBRLogo() {
+  return (
+    <div className="px-5 py-5 border-b border-teal-200">
+      <div className="flex flex-col">
+        <span className="font-bold text-[#0D5C63] text-2xl leading-none tracking-tight select-none">
+          NBR
+        </span>
+        <span className="text-[#0D5C63] text-xs font-normal opacity-60 mt-1">
+          Onboarding
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── Sidebar ────────────────────────────────────────────────────────────────────
 
 export function Sidebar({ role }: SidebarProps) {
   const pathname          = usePathname();
   const { data: session } = useSession();
-  const nav               = role === "realtor" ? realtorNav : adminNav;
   const unreadCount       = useNotices(role);
 
   const name     = session?.user?.name ?? (role === "admin" ? "Coach" : "Realtor");
@@ -51,50 +98,30 @@ export function Sidebar({ role }: SidebarProps) {
   return (
     <aside className="w-56 min-h-screen bg-white border-r border-teal-200 flex flex-col justify-between shrink-0">
 
-      {/* Logo */}
-      <div className="px-5 py-5 border-b border-teal-200">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-teal-600 flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-sm">MJ</span>
-          </div>
-          <div>
-            <p className="font-semibold text-teal-800 text-sm leading-none">MJ Realty</p>
-            <p className="text-[11px] text-teal-400 mt-0.5">Coaching Platform</p>
-          </div>
-        </div>
-      </div>
+      <NBRLogo />
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-4 space-y-0.5">
-        {nav.map((item) => {
-          const active = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors",
-                active
-                  ? "bg-teal-100 text-teal-600 font-medium"
-                  : "text-teal-700 hover:bg-teal-50"
-              )}
-            >
-              {item.label}
-              {item.label === "Notices" && unreadCount > 0 ? (
-                <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white
-                                 text-[10px] font-bold flex items-center justify-center shrink-0">
-                  {unreadCount}
-                </span>
-              ) : item.dot === "orange" ? (
-                <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
-              ) : null}
-            </Link>
-          );
-        })}
-      </nav>
+      {role === "realtor" ? (
+        <RealtorNav pathname={pathname} unreadCount={unreadCount} />
+      ) : (
+        <CoachNav pathname={pathname} unreadCount={unreadCount} />
+      )}
 
-      {/* Footer / user + sign out */}
+      {/* Footer */}
       <div className="flex flex-col gap-0">
+        {role === "realtor" && (
+          <Link
+            href="/dashboard/profile"
+            className={cn(
+              "flex items-center px-5 py-2.5 text-sm transition-colors border-t border-teal-100",
+              pathname === "/dashboard/profile"
+                ? "bg-teal-100 text-teal-600 font-medium"
+                : "text-teal-700 hover:bg-teal-50"
+            )}
+          >
+            Profile
+          </Link>
+        )}
         <div className="px-4 py-4 border-t border-teal-200 flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center shrink-0 overflow-hidden">
             {image ? (
@@ -124,5 +151,127 @@ export function Sidebar({ role }: SidebarProps) {
         </button>
       </div>
     </aside>
+  );
+}
+
+// ── Realtor nav ────────────────────────────────────────────────────────────────
+
+function RealtorNav({ pathname, unreadCount }: { pathname: string; unreadCount: number }) {
+  let inCoachingSection = false;
+
+  return (
+    <nav className="flex-1 overflow-y-auto">
+      {realtorNav.map((item) => {
+        if (item.section) inCoachingSection = true;
+
+        const isParentActive = pathname === item.href ||
+          item.sub?.some((s) => pathname === s.href);
+
+        if (item.section) {
+          // MY COACHING section
+          return (
+            <div key={item.href}>
+              {/* Section header */}
+              <div className="px-5 pt-4 pb-1">
+                <span className="text-[10px] font-bold tracking-widest text-[#0D5C63] uppercase">
+                  {item.section}
+                </span>
+              </div>
+              <div className="border-l-2 border-[#FF6B35] ml-3 mr-2">
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-center px-3 py-2.5 text-sm transition-colors",
+                    isParentActive
+                      ? "bg-teal-100 text-teal-700 font-medium"
+                      : "text-teal-700 hover:bg-teal-50"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div key={item.href} className="px-2 pt-1">
+            {/* Parent item */}
+            <Link
+              href={item.href}
+              className={cn(
+                "flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors font-medium",
+                isParentActive
+                  ? "bg-teal-100 text-teal-600"
+                  : "text-teal-800 hover:bg-teal-50"
+              )}
+            >
+              {item.label}
+            </Link>
+
+            {/* Sub-items */}
+            {item.sub && (
+              <div className="ml-3 mt-0.5 mb-1 border-l border-teal-200 pl-2 space-y-0.5">
+                {item.sub.map((sub) => {
+                  const isActive = pathname === sub.href;
+                  return (
+                    <Link
+                      key={sub.href}
+                      href={sub.href}
+                      className={cn(
+                        "flex items-center justify-between px-2 py-1.5 rounded-md text-xs transition-colors",
+                        isActive
+                          ? "bg-teal-100 text-teal-600 font-medium"
+                          : "text-teal-500 hover:bg-teal-50 hover:text-teal-700"
+                      )}
+                    >
+                      {sub.label}
+                      {sub.label === "Notices" && unreadCount > 0 && (
+                        <span className="min-w-[16px] h-[16px] px-1 rounded-full bg-orange-500 text-white
+                                         text-[9px] font-bold flex items-center justify-center shrink-0">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
+// ── Coach nav ──────────────────────────────────────────────────────────────────
+
+function CoachNav({ pathname, unreadCount }: { pathname: string; unreadCount: number }) {
+  return (
+    <nav className="flex-1 px-2 py-4 space-y-0.5">
+      {coachNav.map((item) => {
+        const active = pathname === item.href;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors",
+              active
+                ? "bg-teal-100 text-teal-600 font-medium"
+                : "text-teal-700 hover:bg-teal-50"
+            )}
+          >
+            {item.label}
+            {item.label === "Notices" && unreadCount > 0 ? (
+              <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white
+                               text-[10px] font-bold flex items-center justify-center shrink-0">
+                {unreadCount}
+              </span>
+            ) : null}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

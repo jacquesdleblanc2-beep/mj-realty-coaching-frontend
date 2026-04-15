@@ -432,9 +432,7 @@ export default function AdminPage() {
       {/* Top nav */}
       <header className="bg-white border-b border-teal-200 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-xs">MJ</span>
-          </div>
+          <span className="font-bold text-[#0D5C63] text-lg leading-none tracking-tight">NBR</span>
           <span className="font-semibold text-teal-800 text-sm">Admin</span>
           <span className="text-xs text-teal-300 border border-teal-200 px-2 py-0.5 rounded-full ml-1">
             super-admin

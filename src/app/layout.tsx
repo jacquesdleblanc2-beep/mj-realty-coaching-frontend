@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "MJ Realty Coaching",
-  description: "Weekly coaching platform for MJ Realty",
+  title: "NBR",
+  description: "Weekly coaching platform for NBR",
 };
 
 export default function RootLayout({
