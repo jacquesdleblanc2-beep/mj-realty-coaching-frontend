@@ -16,9 +16,10 @@ interface RoadmapItem {
 }
 
 interface RoadmapGroup {
-  name:   string;
-  phase?: { label: string; color: "green" | "blue" | "orange" };
-  items:  RoadmapItem[];
+  name:           string;
+  sectionDivider?: string; // renders a full-width section label before this group
+  phase?:         { label: string; color: "green" | "blue" | "orange" };
+  items:          RoadmapItem[];
 }
 
 interface RoadmapLevel {
@@ -35,14 +36,16 @@ function item(text: string, academy = false): RoadmapItem {
 
 const ROADMAP_DATA: RoadmapLevel[] = [
   {
-    id:       "first90",
-    label:    "First 90 Days",
-    subtitle: "Days 1–90 · Your fast-start action plan at Creativ Realty",
-    badges:   ["Day 1 Done", "Halfway There", "Phase 2 Started", "Phase 3 Started", "90 Days Complete"],
+    id:       "new",
+    label:    "New Realtor\u00ae",
+    subtitle: "Year 0–1 · Your first 90 days and beyond",
+    badges:   ["Getting Started", "Building Momentum", "Halfway There", "Almost Done", "Level Complete"],
     groups: [
+      // ── Section A: First 90 Days ─────────────────────────────────────────
       {
-        name:  "Phase 1 — Foundation (Days 1–30)",
-        phase: { label: "Foundation · Days 1–30", color: "green" },
+        name:           "Phase 1 — Foundation (Days 1–30)",
+        sectionDivider: "Your First 90 Days",
+        phase:          { label: "Foundation · Days 1–30", color: "green" },
         items: [
           item("Complete your NBREA membership application"),
           item("Submit your FCNB licence application under Creativ Realty"),
@@ -73,16 +76,10 @@ const ROADMAP_DATA: RoadmapLevel[] = [
           item("Write your 90-day business plan and share it with your coach"),
         ],
       },
-    ],
-  },
-  {
-    id:       "new",
-    label:    "New Realtor",
-    subtitle: "Year 0–1 · Build your foundation and close your first deals",
-    badges:   ["Getting Started", "Building Momentum", "Halfway There", "Almost Done", "Level Complete"],
-    groups: [
+      // ── Section B: Build Your Foundation ────────────────────────────────
       {
-        name: "Brand & online presence",
+        name:           "Brand & online presence",
+        sectionDivider: "Build Your Foundation",
         items: [
           item("Get professional headshots"),
           item("Write a compelling personal bio"),
@@ -104,7 +101,7 @@ const ROADMAP_DATA: RoadmapLevel[] = [
           item("Record a professional voicemail greeting"),
           item("Download and set up the Supra eKey app"),
           item("Download and set up the Touchbase app"),
-          item("Download the Realtor®.ca app (black logo)"),
+          item("Download the Realtor\u00ae.ca app (black logo)"),
           item("Set up a CRM and load your sphere of influence (min. 50 contacts)"),
           item("Write your 90-day business plan"),
           item("Time-block your weekly schedule (prospecting, follow-up, admin)"),
@@ -146,7 +143,7 @@ const ROADMAP_DATA: RoadmapLevel[] = [
           item("Practice your buyer consultation script 5 times (role play)"),
           item("Practice your listing presentation 5 times (role play)"),
           item("Complete your brokerage onboarding training fully"),
-          item("Attend 2 REALTOR® board or networking events"),
+          item("Attend 2 REALTOR\u00ae board or networking events"),
           item("Complete 1 negotiation or objection handling course"),
           item("Read 1 real estate sales or mindset book"),
         ],
@@ -437,11 +434,10 @@ function levelCompletedCount(level: RoadmapLevel, completed: Set<string>): numbe
 }
 
 const LEVEL_LABELS: Record<string, string> = {
-  first90: "First 90 Days",
-  new:     "New Realtor",
-  y12:     "1–2 Years",
-  y35:     "3–5 Years",
-  y5plus:  "5+ Years",
+  new:    "New Realtor\u00ae",
+  y12:    "1–2 Years",
+  y35:    "3–5 Years",
+  y5plus: "5+ Years",
 };
 
 const PHASE_STYLES: Record<"green" | "blue" | "orange", string> = {
@@ -478,7 +474,6 @@ export default function RoadmapPage() {
 
   async function toggle(itemText: string, isChecked: boolean) {
     if (!realtor) return;
-    // Optimistic update
     setCompleted((prev) => {
       const next = new Set(prev);
       if (isChecked) next.add(itemText);
@@ -489,7 +484,6 @@ export default function RoadmapPage() {
       const updated = await patchRoadmapItem(realtor.id, itemText, isChecked);
       setCompleted(new Set(updated));
     } catch {
-      // Revert on failure
       setCompleted((prev) => {
         const next = new Set(prev);
         if (isChecked) next.delete(itemText);
@@ -513,7 +507,6 @@ export default function RoadmapPage() {
   const done        = levelCompletedCount(activeLevel, completed);
   const pct         = total > 0 ? Math.round((done / total) * 100) : 0;
 
-  // Badge unlocks at 20/40/60/80/100%
   const badgeThresholds = [20, 40, 60, 80, 100];
 
   return (
@@ -526,7 +519,7 @@ export default function RoadmapPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-teal-800">My Roadmap</h1>
           <p className="text-sm text-teal-500 mt-1">
-            {LEVEL_LABELS[userLevel] ?? "New Realtor"} · {activeLevel.subtitle}
+            {LEVEL_LABELS[userLevel] ?? "New Realtor\u00ae"} · {activeLevel.subtitle}
           </p>
         </div>
 
@@ -607,64 +600,74 @@ export default function RoadmapPage() {
             const groupDone  = group.items.filter((i) => completed.has(i.text)).length;
             const groupTotal = group.items.length;
             return (
-              <div key={group.name} className="bg-white border border-teal-200 rounded-xl overflow-hidden">
-                {/* Group header */}
-                <div className="flex items-center justify-between px-5 py-3.5 border-b border-teal-100">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {group.phase && (
-                      <span className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${PHASE_STYLES[group.phase.color]}`}>
-                        {group.phase.label}
-                      </span>
-                    )}
-                    {!group.phase && (
-                      <h3 className="text-sm font-semibold text-teal-800">{group.name}</h3>
-                    )}
+              <div key={group.name}>
+                {/* Section divider */}
+                {group.sectionDivider && (
+                  <div className="flex items-center gap-3 mb-3 mt-2">
+                    <span className="text-xs font-bold text-[#0D5C63] uppercase tracking-widest">
+                      {group.sectionDivider}
+                    </span>
+                    <div className="flex-1 h-px bg-teal-200" />
                   </div>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0
-                    ${groupDone === groupTotal
-                      ? "bg-teal-100 text-teal-700"
-                      : "bg-teal-50 text-teal-500"}`}>
-                    {groupDone}/{groupTotal}
-                  </span>
-                </div>
+                )}
 
-                {/* Items */}
-                <ul className="divide-y divide-teal-50">
-                  {group.items.map((it) => {
-                    const isChecked = completed.has(it.text);
-                    return (
-                      <li key={it.text}>
-                        <button
-                          type="button"
-                          onClick={() => toggle(it.text, !isChecked)}
-                          className="w-full flex items-start gap-3 px-5 py-3 text-left hover:bg-teal-50 transition-colors"
-                        >
-                          {/* Circle checkbox */}
-                          <span className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors
-                            ${isChecked
-                              ? "bg-teal-500 border-teal-500"
-                              : "border-teal-300"}`}>
-                            {isChecked && (
-                              <svg className="w-3 h-3 text-white" viewBox="0 0 12 10" fill="none">
-                                <path d="M1 5l3.5 3.5L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                            )}
-                          </span>
+                <div className="bg-white border border-teal-200 rounded-xl overflow-hidden">
+                  {/* Group header */}
+                  <div className="flex items-center justify-between px-5 py-3.5 border-b border-teal-100">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {group.phase ? (
+                        <span className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${PHASE_STYLES[group.phase.color]}`}>
+                          {group.phase.label}
+                        </span>
+                      ) : (
+                        <h3 className="text-sm font-semibold text-teal-800">{group.name}</h3>
+                      )}
+                    </div>
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0
+                      ${groupDone === groupTotal
+                        ? "bg-teal-100 text-teal-700"
+                        : "bg-teal-50 text-teal-500"}`}>
+                      {groupDone}/{groupTotal}
+                    </span>
+                  </div>
 
-                          <span className={`text-sm leading-snug flex-1 ${isChecked ? "line-through text-teal-400" : "text-teal-800"}`}>
-                            {it.text}
-                          </span>
-
-                          {it.academy && (
-                            <span className="shrink-0 text-[10px] font-semibold bg-teal-100 text-teal-600 px-2 py-0.5 rounded-full mt-0.5">
-                              Real Academy
+                  {/* Items */}
+                  <ul className="divide-y divide-teal-50">
+                    {group.items.map((it) => {
+                      const isChecked = completed.has(it.text);
+                      return (
+                        <li key={it.text}>
+                          <button
+                            type="button"
+                            onClick={() => toggle(it.text, !isChecked)}
+                            className="w-full flex items-start gap-3 px-5 py-3 text-left hover:bg-teal-50 transition-colors"
+                          >
+                            <span className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors
+                              ${isChecked
+                                ? "bg-teal-500 border-teal-500"
+                                : "border-teal-300"}`}>
+                              {isChecked && (
+                                <svg className="w-3 h-3 text-white" viewBox="0 0 12 10" fill="none">
+                                  <path d="M1 5l3.5 3.5L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              )}
                             </span>
-                          )}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+
+                            <span className={`text-sm leading-snug flex-1 ${isChecked ? "line-through text-teal-400" : "text-teal-800"}`}>
+                              {it.text}
+                            </span>
+
+                            {it.academy && (
+                              <span className="shrink-0 text-[10px] font-semibold bg-teal-100 text-teal-600 px-2 py-0.5 rounded-full mt-0.5">
+                                Real Academy
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               </div>
             );
           })}
