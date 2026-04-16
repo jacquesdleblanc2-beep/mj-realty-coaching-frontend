@@ -1,8 +1,8 @@
 "use client";
 
-// src/app/dashboard/system/page.tsx — Build Your System
+// src/app/dashboard/system/page.tsx — Finding My System
 
-import { useEffect, useState, useId } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
@@ -25,160 +25,215 @@ function currentWeekLabel(): string {
   return `Week of ${fmt(mon)} \u2013 ${fmt(sun)}`;
 }
 
-// ── Methodology data ───────────────────────────────────────────────────────────
+// ── Presets (identical to coach form) ─────────────────────────────────────────
 
-type MethodologyKey =
-  | "ninja_selling"
-  | "mrea"
-  | "fanatical_prospecting"
-  | "the_one_thing"
-  | "atomic_habits"
-  | "custom";
+type PresetTask = Task & { baseTarget?: number };
 
-interface Methodology {
-  key:         MethodologyKey;
-  name:        string;
-  author:      string;
-  description: string;
-  accent:      string;
-}
-
-const METHODOLOGIES: Methodology[] = [
-  {
-    key:         "ninja_selling",
-    name:        "Ninja Selling",
-    author:      "Larry Kendall",
-    description: "Relationship-first, low-pressure system focused on flow activities \u2014 calls, notes, pop-bys. High trust, sustainable, zero chase.",
-    accent:      "bg-emerald-500",
-  },
-  {
-    key:         "mrea",
-    name:        "MREA",
-    author:      "Gary Keller",
-    description: "Lead generation machine. Built on database, listings, and leverage. Best for agents focused on volume and systematic growth.",
-    accent:      "bg-blue-500",
-  },
-  {
-    key:         "fanatical_prospecting",
-    name:        "Fanatical Prospecting",
-    author:      "Jeb Blount",
-    description: "High-activity, multi-channel prospecting. Phone, email, social, in-person \u2014 all at once. Built for agents who want to fill their pipeline fast.",
-    accent:      "bg-orange-500",
-  },
-  {
-    key:         "the_one_thing",
-    name:        "The ONE Thing",
-    author:      "Gary Keller & Jay Papasan",
-    description: "Radical focus. Identify the one lead generation activity that matters most and go deep on it. Anti-multitask.",
-    accent:      "bg-purple-500",
-  },
-  {
-    key:         "atomic_habits",
-    name:        "Atomic Habits",
-    author:      "James Clear",
-    description: "Build your business through small daily habits that compound. Identity-based: become the type of agent who does the work automatically.",
-    accent:      "bg-teal-500",
-  },
-  {
-    key:         "custom",
-    name:        "Custom",
-    author:      "",
-    description: "Build your own system from scratch. No framework \u2014 just the habits and tasks that work for you.",
-    accent:      "bg-slate-400",
-  },
-];
-
-// ── Default tasks per methodology ──────────────────────────────────────────────
-
-function makeTask(
+function pt(
+  category: string,
   task: string,
+  type: "checkbox" | "count",
   points: number,
-  input_type: "yes_no" | "count",
-  target?: number
-): Task {
+  baseTarget?: number
+): PresetTask {
   return {
-    category:   "Custom",
-    task,
-    points,
-    type:       input_type === "count" ? "Count" : "Yes/No",
-    input_type,
-    enabled:    true,
-    is_custom:  true,
-    ...(target !== undefined ? { target, baseTarget: target } : {}),
+    category, task, type, input_type: type, points,
+    enabled: true, is_custom: true,
+    ...(baseTarget !== undefined ? { baseTarget, target: baseTarget } : {}),
   };
 }
 
-function defaultTasksFor(key: MethodologyKey): Task[] {
-  switch (key) {
-    case "ninja_selling":
-      return [
-        makeTask("Flow calls \u2014 reach out to people in your database", 10, "count", 10),
-        makeTask("Write 3 handwritten notes or personal texts", 6, "yes_no"),
-        makeTask("Pop-by a past client or sphere member", 8, "yes_no"),
-        makeTask("Update CRM with new notes and contacts", 5, "yes_no"),
-        makeTask("Review your Hot, Warm, Cold list", 4, "yes_no"),
-      ];
-    case "mrea":
-      return [
-        makeTask("Lead generation calls (database + new)", 10, "count", 20),
-        makeTask("Listing appointments booked or held", 10, "count", 2),
-        makeTask("Buyer consultations completed", 8, "count", 2),
-        makeTask("Add contacts to database", 5, "count", 5),
-        makeTask("Review and update lead tracker", 4, "yes_no"),
-      ];
-    case "fanatical_prospecting":
-      return [
-        makeTask("Phone prospecting calls made", 10, "count", 25),
-        makeTask("LinkedIn or social media outreach messages sent", 6, "count", 10),
-        makeTask("Door knocking or in-person contacts", 8, "count", 5),
-        makeTask("Email prospecting sequence sent", 5, "yes_no"),
-        makeTask("Referral requests made directly", 7, "count", 3),
-      ];
-    case "the_one_thing":
-      return [
-        makeTask("Lead generation focus block completed (uninterrupted)", 10, "yes_no"),
-        makeTask("Primary lead gen activity reps completed", 10, "count", 15),
-        makeTask("All distractions blocked during focus time", 5, "yes_no"),
-        makeTask("Reviewed weekly ONE Thing goal", 4, "yes_no"),
-      ];
-    case "atomic_habits":
-      return [
-        makeTask("Morning habit stack completed (prospecting included)", 8, "yes_no"),
-        makeTask("Habit tracker updated daily", 5, "yes_no"),
-        makeTask("Lead generation contacts made", 10, "count", 10),
-        makeTask("Environment designed for focus (phone away, desk clear)", 4, "yes_no"),
-        makeTask("Reflected on identity: \u2018I am the type of agent who\u2026\u2019", 3, "yes_no"),
-      ];
-    case "custom":
-      return [];
+type Preset = { note: string; tasks: PresetTask[] };
+
+const PRESETS: Record<string, Preset> = {
+  "Ninja Selling": {
+    note: "Verified \u2014 Official Ninja Nine (ninjaselling.com)",
+    tasks: [
+      pt("Prospecting",     "Live interviews / prospecting calls",           "count",    12, 50),
+      pt("Prospecting",     "Send personal notes or texts",                  "count",    8,  10),
+      pt("Prospecting",     "Live real estate reviews",                      "count",    6,  2),
+      pt("Prospecting",     "Add new contacts to CRM",                       "count",    5,  3),
+      pt("Prospecting",     "Request referrals",                             "count",    5,  3),
+      pt("Follow-Up",       "Warm calls to sphere (customer service calls)", "count",    10, 10),
+      pt("Follow-Up",       "Follow up with all active clients",             "checkbox", 8),
+      pt("Follow-Up",       "Touch leads in CRM",                            "count",    6,  10),
+      pt("Follow-Up",       "Update all CRM notes",                          "checkbox", 5),
+      pt("Listings/Buyers", "Listing appointment held or scheduled",         "count",    8,  1),
+      pt("Listings/Buyers", "Buyer consultation completed",                  "count",    7,  1),
+      pt("Listings/Buyers", "Send market update to clients",                 "count",    5,  5),
+      pt("Education",       "30+ min reading / training",                    "checkbox", 5),
+      pt("Education",       "Review coaching notes",                         "checkbox", 5),
+      pt("Education",       "Time block lead gen hour",                      "checkbox", 5),
+    ],
+  },
+  "KW / MREA": {
+    note: "Verified \u2014 MREA + KW Lead Generation 36:12:3",
+    tasks: [
+      pt("Prospecting",     "Prospecting calls",                          "count",    10, 20),
+      pt("Prospecting",     "Warm calls to sphere",                       "count",    7,  10),
+      pt("Prospecting",     "Add contacts to CRM",                        "count",    5,  5),
+      pt("Prospecting",     "Request referrals",                          "count",    5,  3),
+      pt("Prospecting",     "Door knock or attend event",                 "checkbox", 4),
+      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 10),
+      pt("Follow-Up",       "Touch leads in CRM (8x8 / 33 Touch)",        "count",    7,  10),
+      pt("Follow-Up",       "Update CRM notes",                           "checkbox", 5),
+      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,  2),
+      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,  1),
+      pt("Listings/Buyers", "Review new MLS listings",                    "count",    4,  10),
+      pt("Listings/Buyers", "Send market update",                         "count",    4,  5),
+      pt("Social/Brand",    "Post on social media",                       "count",    4,  3),
+      pt("Social/Brand",    "Request Google/Zillow review",               "count",    4,  1),
+      pt("Education",       "Time block 3hr lead gen daily (5x/week)",    "checkbox", 6),
+      pt("Education",       "30+ min training",                           "checkbox", 6),
+      pt("Education",       "Review coaching notes",                      "checkbox", 4),
+    ],
+  },
+  "Ryan Serhant": {
+    note: "Estimated \u2014 Serhant system philosophy",
+    tasks: [
+      pt("Prospecting",     "Prospecting calls",                          "count",    12, 30),
+      pt("Prospecting",     "Expand sphere \u2014 new contacts added",    "count",    7,  5),
+      pt("Prospecting",     "Door knock or attend community event",       "checkbox", 5),
+      pt("Prospecting",     "Request reviews (Google/Zillow)",            "count",    5,  2),
+      pt("Follow-Up",       "Follow up with all active clients",          "checkbox", 12),
+      pt("Follow-Up",       "Touch leads in CRM",                         "count",    10, 15),
+      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,  2),
+      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,  1),
+      pt("Social/Brand",    "Post on social media",                       "count",    10, 7),
+      pt("Social/Brand",    "Publish video content",                      "count",    9,  3),
+      pt("Social/Brand",    "Share educational real estate content",      "count",    5,  3),
+      pt("Education",       "30+ min training / reading",                 "checkbox", 5),
+      pt("Education",       "Time block lead gen hour",                   "checkbox", 5),
+    ],
+  },
+  "Tom Ferry": {
+    note: "Estimated \u2014 Tom Ferry philosophy",
+    tasks: [
+      pt("Prospecting",     "Prospecting calls",                          "count",    8,  25),
+      pt("Prospecting",     "Warm calls to sphere",                       "count",    7,  10),
+      pt("Prospecting",     "Add contacts to CRM",                        "count",    5,  5),
+      pt("Prospecting",     "Door knock or attend event",                 "checkbox", 4),
+      pt("Prospecting",     "Request reviews",                            "count",    4,  2),
+      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 8),
+      pt("Follow-Up",       "Touch leads in CRM",                         "count",    7,  15),
+      pt("Follow-Up",       "Update CRM notes",                           "checkbox", 4),
+      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,  2),
+      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,  2),
+      pt("Listings/Buyers", "Send market update",                         "count",    4,  5),
+      pt("Social/Brand",    "Post on social media",                       "count",    5,  5),
+      pt("Social/Brand",    "Publish video content",                      "count",    6,  2),
+      pt("Social/Brand",    "Share educational content",                  "count",    4,  2),
+      pt("Education",       "Daily role-play / scripts practice",         "checkbox", 5),
+      pt("Education",       "30+ min training",                           "checkbox", 5),
+      pt("Education",       "Review coaching notes",                      "checkbox", 4),
+      pt("Education",       "Time block lead gen hour",                   "checkbox", 5),
+    ],
+  },
+  "Buffini Referral": {
+    note: "Estimated \u2014 Buffini system",
+    tasks: [
+      pt("Prospecting",     "Warm calls to sphere / past clients",        "count",    15, 10),
+      pt("Prospecting",     "Request referrals",                          "count",    15, 5),
+      pt("Prospecting",     "Send personal notes",                        "count",    12, 5),
+      pt("Prospecting",     "Pop-by / in-person client visit",            "count",    8,  2),
+      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 13),
+      pt("Follow-Up",       "Touch leads in CRM",                         "count",    9,  8),
+      pt("Follow-Up",       "Monthly mailer / newsletter sent",           "checkbox", 8),
+      pt("Listings/Buyers", "Send market update to clients",              "count",    5,  5),
+      pt("Social/Brand",    "Request Google/Zillow review",               "count",    5,  2),
+      pt("Education",       "30+ min reading / training",                 "checkbox", 5),
+      pt("Education",       "Review coaching notes",                      "checkbox", 5),
+    ],
+  },
+  "The ONE Thing": {
+    note: "Estimated \u2014 The ONE Thing philosophy",
+    tasks: [
+      pt("Prospecting",     "Prospecting calls (lead gen hour)",          "count",    15, 15),
+      pt("Prospecting",     "Add contacts to CRM",                        "count",    7,  3),
+      pt("Prospecting",     "Touch leads in CRM",                         "count",    10, 10),
+      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 12),
+      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    14, 1),
+      pt("Listings/Buyers", "Buyer consultation completed",               "count",    12, 1),
+      pt("Education",       "Identify single MIT (most important task)",  "checkbox", 12),
+      pt("Education",       "Time block lead gen hour (no interruptions)","checkbox", 14),
+      pt("Education",       "30+ min reading / training",                 "checkbox", 4),
+    ],
+  },
+  "BOLD / KW MAPS": {
+    note: "Estimated \u2014 BOLD/KW MAPS",
+    tasks: [
+      pt("Prospecting",     "Prospecting calls",                          "count",    10, 20),
+      pt("Prospecting",     "Warm calls to sphere",                       "count",    7,  10),
+      pt("Prospecting",     "Add contacts to CRM",                        "count",    5,  5),
+      pt("Prospecting",     "Request referrals",                          "count",    5,  3),
+      pt("Prospecting",     "Door knock or attend event",                 "checkbox", 4),
+      pt("Follow-Up",       "Follow up with active clients",              "checkbox", 10),
+      pt("Follow-Up",       "Touch leads in CRM",                         "count",    7,  15),
+      pt("Follow-Up",       "Update CRM notes",                           "checkbox", 4),
+      pt("Listings/Buyers", "Listing appointment held or scheduled",      "count",    8,  2),
+      pt("Listings/Buyers", "Buyer consultation completed",               "count",    7,  2),
+      pt("Social/Brand",    "Post on social media",                       "count",    5,  3),
+      pt("Social/Brand",    "Request reviews",                            "count",    4,  2),
+      pt("Education",       "Daily role-play / scripts practice",         "checkbox", 9),
+      pt("Education",       "30+ min training",                           "checkbox", 5),
+      pt("Education",       "Time block lead gen hour",                   "checkbox", 6),
+      pt("Education",       "Review coaching notes",                      "checkbox", 4),
+    ],
+  },
+};
+
+const SYSTEM_NAMES = [...Object.keys(PRESETS), "Custom"] as const;
+
+const CATEGORIES = ["Prospecting", "Listings/Buyers", "Follow-Up", "Social/Brand", "Education", "Custom"] as const;
+
+// ── System config persistence keys ────────────────────────────────────────────
+
+const SYS_SEL_PREFIX = "system_sel:";
+const SYS_HRS_PREFIX = "system_hrs:";
+
+function parseSystemConfig(completed: Set<string>): { system: string | null; hours: number } {
+  let system: string | null = null;
+  let hours = 30;
+  for (const k of completed) {
+    if (k.startsWith(SYS_SEL_PREFIX)) system = decodeURIComponent(k.slice(SYS_SEL_PREFIX.length));
+    if (k.startsWith(SYS_HRS_PREFIX)) hours = Number(k.slice(SYS_HRS_PREFIX.length)) || 30;
   }
+  return { system, hours };
 }
 
-// ── Methodology key helpers ────────────────────────────────────────────────────
-
-const SEL_PREFIX = "system_sel:";
-
-function parseSelectedMethodology(completed: Set<string>): MethodologyKey | null {
-  for (const k of completed) {
-    if (k.startsWith(SEL_PREFIX)) return k.slice(SEL_PREFIX.length) as MethodologyKey;
-  }
+function findKey(completed: Set<string>, prefix: string): string | null {
+  for (const k of completed) if (k.startsWith(prefix)) return k;
   return null;
 }
 
-// ── Sub-components ─────────────────────────────────────────────────────────────
+function scalePreset(presetName: string, hours: number): Task[] {
+  const preset = PRESETS[presetName];
+  if (!preset) return [];
+  return preset.tasks.map((t) => ({
+    ...t,
+    target: (t.type === "count" && t.baseTarget)
+      ? Math.max(1, Math.round(t.baseTarget * (hours / 40)))
+      : t.target,
+  })) as Task[];
+}
 
-function Toast({ message, onDone }: { message: string; onDone: () => void }) {
-  useEffect(() => {
-    const t = setTimeout(onDone, 2800);
-    return () => clearTimeout(t);
-  }, [onDone]);
+// ── Toggle ────────────────────────────────────────────────────────────────────
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
-    <div className="fixed bottom-6 right-6 bg-[#0D5C63] text-white text-sm font-medium
-                    px-5 py-3 rounded-xl shadow-lg z-50">
-      {message}
-    </div>
+    <button
+      type="button"
+      onClick={onChange}
+      className={`relative inline-flex w-8 h-4 rounded-full transition-colors shrink-0
+                  ${checked ? "bg-teal-500" : "bg-teal-200"}`}
+    >
+      <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform
+                        ${checked ? "translate-x-4" : "translate-x-0"}`} />
+    </button>
   );
 }
+
+// ── Warning modal ─────────────────────────────────────────────────────────────
 
 function WarningModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
   return (
@@ -187,7 +242,7 @@ function WarningModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel
         <h2 className="text-base font-semibold text-slate-900 mb-2">Change tasks mid-week?</h2>
         <p className="text-sm text-slate-600 leading-relaxed mb-5">
           You&apos;ve already logged activity this week. Changing your task list mid-week
-          may affect your current score. Your coach can see this.
+          may affect your current score. Your coach can see this change.
         </p>
         <div className="flex gap-3 justify-end">
           <button
@@ -199,8 +254,8 @@ function WarningModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 text-sm font-medium text-white bg-[#0D5C63]
-                       rounded-lg hover:bg-[#0A4A50] transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-[#FF6B35]
+                       rounded-lg hover:bg-orange-600 transition-colors"
           >
             Save anyway
           </button>
@@ -210,76 +265,17 @@ function WarningModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel
   );
 }
 
-function AddTaskRow({ onAdd }: { onAdd: (t: Task) => void }) {
-  const id = useId();
-  const [name,   setName]   = useState("");
-  const [type,   setType]   = useState<"yes_no" | "count">("yes_no");
-  const [points, setPoints] = useState(5);
-  const [target, setTarget] = useState(10);
+// ── Toast ─────────────────────────────────────────────────────────────────────
 
-  function submit() {
-    if (!name.trim()) return;
-    onAdd(makeTask(name.trim(), points, type, type === "count" ? target : undefined));
-    setName(""); setType("yes_no"); setPoints(5); setTarget(10);
-  }
-
+function Toast({ message, onDone }: { message: string; onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 3000);
+    return () => clearTimeout(t);
+  }, [onDone]);
   return (
-    <div className="flex flex-wrap gap-2 items-end px-4 py-3 bg-teal-50/60 border-t border-teal-100">
-      <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
-        <label htmlFor={`${id}-name`} className="text-xs text-slate-500">Task name</label>
-        <input
-          id={`${id}-name`}
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && submit()}
-          placeholder="e.g. Call 10 past clients"
-          className="px-3 py-1.5 text-sm border border-[#B2DFDB] rounded-lg focus:outline-none
-                     focus:border-[#0D5C63] bg-white"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor={`${id}-type`} className="text-xs text-slate-500">Type</label>
-        <select
-          id={`${id}-type`}
-          value={type}
-          onChange={(e) => setType(e.target.value as "yes_no" | "count")}
-          className="px-3 py-1.5 text-sm border border-[#B2DFDB] rounded-lg focus:outline-none
-                     focus:border-[#0D5C63] bg-white"
-        >
-          <option value="yes_no">Yes/No</option>
-          <option value="count">Count</option>
-        </select>
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor={`${id}-pts`} className="text-xs text-slate-500">Points</label>
-        <input
-          id={`${id}-pts`}
-          type="number" min={1} max={20} value={points}
-          onChange={(e) => setPoints(Number(e.target.value))}
-          className="w-20 px-3 py-1.5 text-sm border border-[#B2DFDB] rounded-lg focus:outline-none
-                     focus:border-[#0D5C63] bg-white"
-        />
-      </div>
-      {type === "count" && (
-        <div className="flex flex-col gap-1">
-          <label htmlFor={`${id}-tgt`} className="text-xs text-slate-500">Target</label>
-          <input
-            id={`${id}-tgt`}
-            type="number" min={1} max={999} value={target}
-            onChange={(e) => setTarget(Number(e.target.value))}
-            className="w-20 px-3 py-1.5 text-sm border border-[#B2DFDB] rounded-lg focus:outline-none
-                       focus:border-[#0D5C63] bg-white"
-          />
-        </div>
-      )}
-      <button
-        onClick={submit}
-        className="px-4 py-1.5 text-sm font-medium text-white bg-[#0D5C63] rounded-lg
-                   hover:bg-[#0A4A50] transition-colors"
-      >
-        + Add
-      </button>
+    <div className="fixed bottom-6 right-6 bg-green-600 text-white text-sm font-medium
+                    px-5 py-3 rounded-xl shadow-lg z-50">
+      {message}
     </div>
   );
 }
@@ -290,16 +286,24 @@ export default function SystemPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [realtor,   setRealtor]   = useState<Realtor | null>(null);
-  const [completed, setCompleted] = useState<Set<string>>(new Set());
-  const [coachTasks, setCoachTasks] = useState<Task[]>([]);
-  const [myTasks,   setMyTasks]   = useState<Task[]>([]);
-  const [hours,     setHours]     = useState(10);
-  const [days,      setDays]      = useState(5);
-  const [saving,    setSaving]    = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [toast,     setToast]     = useState<string | null>(null);
-  const [loading,   setLoading]   = useState(true);
+  const [realtor,       setRealtor]       = useState<Realtor | null>(null);
+  const [completed,     setCompleted]     = useState<Set<string>>(new Set());
+  const [coachTasks,    setCoachTasks]    = useState<Task[]>([]);
+  const [tasks,         setTasks]         = useState<Task[]>([]);
+  const [activePreset,  setActivePreset]  = useState<string>("");
+  const [weeklyHours,   setWeeklyHours]   = useState<number>(30);
+  const [showCoach,     setShowCoach]     = useState(false);
+  const [showAddForm,   setShowAddForm]   = useState(false);
+  const [newCategory,   setNewCategory]   = useState<string>("Custom");
+  const [newTaskName,   setNewTaskName]   = useState("");
+  const [newTaskType,   setNewTaskType]   = useState<"checkbox" | "count">("checkbox");
+  const [newTaskTarget, setNewTaskTarget] = useState(1);
+  const [newTaskPoints, setNewTaskPoints] = useState(5);
+  const [saving,        setSaving]        = useState(false);
+  const [showModal,     setShowModal]     = useState(false);
+  const [toast,         setToast]         = useState<string | null>(null);
+  const [error,         setError]         = useState("");
+  const [loading,       setLoading]       = useState(true);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/");
@@ -311,64 +315,126 @@ export default function SystemPage() {
     getRealtorByEmail(email).then((r) => {
       if (!r) { router.push("/"); return; }
       setRealtor(r);
+
+      // Coach tasks: those NOT marked custom
+      const ct = (r.tasks ?? []).filter((t) => !t.is_custom);
+      setCoachTasks(ct);
+
       const rc = new Set(r.roadmap_completed ?? []);
       setCompleted(rc);
-      setCoachTasks((r.tasks ?? []).filter((t) => !t.is_custom));
-      setMyTasks((r.tasks ?? []).filter((t) => t.is_custom));
+
+      // Restore system config
+      const { system, hours } = parseSystemConfig(rc);
+      setWeeklyHours(hours);
+      if (system && SYSTEM_NAMES.includes(system as typeof SYSTEM_NAMES[number])) {
+        setActivePreset(system);
+        if (system !== "Custom") {
+          // Use any previously-saved custom tasks as starting point, else load preset
+          const saved = (r.tasks ?? []).filter((t) => t.is_custom);
+          setTasks(saved.length ? saved : scalePreset(system, hours));
+        } else {
+          setTasks((r.tasks ?? []).filter((t) => t.is_custom));
+        }
+      } else {
+        // No system selected yet — start from custom tasks already saved, or empty
+        setTasks((r.tasks ?? []).filter((t) => t.is_custom));
+      }
     }).finally(() => setLoading(false));
   }, [status, session, router]);
 
-  // ── Methodology selection ────────────────────────────────────────────────────
+  // ── Task helpers ─────────────────────────────────────────────────────────────
 
-  async function selectMethodology(key: MethodologyKey) {
+  function updateTask(i: number, patch: Partial<Task>) {
+    setTasks((prev) => prev.map((t, idx) => idx === i ? { ...t, ...patch } : t));
+  }
+
+  function deleteTask(i: number) {
+    setTasks((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function addCustomTask() {
+    if (!newTaskName.trim()) return;
+    const newTask: Task = {
+      category: newCategory,
+      task: newTaskName.trim(),
+      points: newTaskPoints,
+      type: newTaskType,
+      input_type: newTaskType,
+      enabled: true,
+      is_custom: true,
+      ...(newTaskType === "count" ? { target: newTaskTarget } : {}),
+    };
+    setTasks((prev) => {
+      const lastIdx = prev.map((t, i) => t.category === newCategory ? i : -1).filter(i => i >= 0).at(-1);
+      if (lastIdx === undefined) return [...prev, newTask];
+      const next = [...prev];
+      next.splice(lastIdx + 1, 0, newTask);
+      return next;
+    });
+    setNewTaskName(""); setNewTaskType("checkbox"); setNewTaskTarget(1); setNewTaskPoints(5);
+    setShowAddForm(false);
+  }
+
+  // ── System selection ─────────────────────────────────────────────────────────
+
+  async function selectSystem(name: string) {
     if (!realtor) return;
-    const prev = parseSelectedMethodology(completed);
-    if (prev === key) return;
+    const prev = findKey(completed, SYS_SEL_PREFIX);
+    const newKey = `${SYS_SEL_PREFIX}${encodeURIComponent(name)}`;
 
     setCompleted((c) => {
       const next = new Set(c);
-      if (prev) next.delete(`${SEL_PREFIX}${prev}`);
-      next.add(`${SEL_PREFIX}${key}`);
+      if (prev) next.delete(prev);
+      next.add(newKey);
       return next;
     });
+    setActivePreset(name);
+
+    // Pre-populate tasks (only if switching systems — don't blow away current work on same system)
+    if (name !== activePreset) {
+      setTasks(name !== "Custom" ? scalePreset(name, weeklyHours) : []);
+    }
 
     try {
-      if (prev) await patchRoadmapItem(realtor.id, `${SEL_PREFIX}${prev}`, false);
-      const updated = await patchRoadmapItem(realtor.id, `${SEL_PREFIX}${key}`, true);
+      if (prev) await patchRoadmapItem(realtor.id, prev, false);
+      const updated = await patchRoadmapItem(realtor.id, newKey, true);
       setCompleted(new Set(updated));
     } catch {
       setCompleted((c) => {
         const next = new Set(c);
-        next.delete(`${SEL_PREFIX}${key}`);
-        if (prev) next.add(`${SEL_PREFIX}${prev}`);
+        next.delete(newKey);
+        if (prev) next.add(prev);
         return next;
       });
     }
-
-    if (myTasks.length === 0) setMyTasks(defaultTasksFor(key));
   }
 
-  // ── Task list management ─────────────────────────────────────────────────────
+  // ── Hours change ─────────────────────────────────────────────────────────────
 
-  function addTask(t: Task)         { setMyTasks((p) => [...p, t]); }
-  function removeTask(i: number)    { setMyTasks((p) => p.filter((_, idx) => idx !== i)); }
-  function moveTask(i: number, d: -1 | 1) {
-    setMyTasks((p) => {
-      const n = [...p], j = i + d;
-      if (j < 0 || j >= n.length) return p;
-      [n[i], n[j]] = [n[j], n[i]];
-      return n;
-    });
+  function changeHours(h: number) {
+    setWeeklyHours(h);
+    setTasks((prev) => prev.map((t) => {
+      if ((t.type === "count" || t.input_type === "count") && t.baseTarget) {
+        return { ...t, target: Math.max(1, Math.round(t.baseTarget * (h / 40))) };
+      }
+      return t;
+    }));
   }
 
   // ── Save ─────────────────────────────────────────────────────────────────────
 
   async function attemptSave() {
     if (!realtor) return;
+    const enabledTotal = tasks.filter((t) => t.enabled).reduce((s, t) => s + (t.points || 0), 0);
+    if (enabledTotal !== 100) {
+      setError(`Enabled tasks must total exactly 100 points (currently ${enabledTotal}). Adjust before saving.`);
+      return;
+    }
+    setError("");
     setSaving(true);
     try {
-      const progress = await getProgress(realtor.id, currentWeekLabel()).catch(() => null);
-      const score = (progress as { score?: number } | null)?.score ?? 0;
+      const prog = await getProgress(realtor.id, currentWeekLabel()).catch(() => null);
+      const score = (prog as { score?: number } | null)?.score ?? 0;
       if (score > 0) { setShowModal(true); setSaving(false); return; }
       await doSave();
     } catch {
@@ -379,14 +445,24 @@ export default function SystemPage() {
   async function doSave() {
     if (!realtor) return;
     setSaving(true);
+    setShowModal(false);
     try {
-      await updateRealtor(realtor.id, { tasks: [...coachTasks, ...myTasks] });
-      setToast("System saved!");
+      // Persist hours to roadmap_completed
+      const oldHrsKey = findKey(completed, SYS_HRS_PREFIX);
+      const newHrsKey = `${SYS_HRS_PREFIX}${weeklyHours}`;
+      if (oldHrsKey && oldHrsKey !== newHrsKey) {
+        await patchRoadmapItem(realtor.id, oldHrsKey, false);
+      }
+      const updatedRc = await patchRoadmapItem(realtor.id, newHrsKey, true);
+      setCompleted(new Set(updatedRc));
+
+      // Save tasks: merge coach tasks (unchanged) + realtor's editable tasks
+      await updateRealtor(realtor.id, { tasks: [...coachTasks, ...tasks] });
+      setToast("System saved. Your My Week tab will reflect these tasks.");
     } catch {
-      setToast("Save failed. Try again.");
+      setError("Save failed. Please try again.");
     } finally {
       setSaving(false);
-      setShowModal(false);
     }
   }
 
@@ -400,227 +476,366 @@ export default function SystemPage() {
     );
   }
 
-  const selectedKey = parseSelectedMethodology(completed);
-  const minsPerDay  = days > 0 ? Math.round((hours * 60) / days) : 0;
-  const hoursPerDay = days > 0 ? (hours / days).toFixed(1) : "0";
+  const enabledTotal = tasks.filter((t) => t.enabled).reduce((s, t) => s + (t.points || 0), 0);
+  const totalExact   = enabledTotal === 100;
+  const totalOver    = enabledTotal > 100;
+
+  // Categories present in current task list
+  const seenCats: string[] = [];
+  tasks.forEach((t) => { if (!seenCats.includes(t.category)) seenCats.push(t.category); });
+
+  const hrsPerDay = weeklyHours > 0 ? (weeklyHours / 5).toFixed(1) : "0";
 
   return (
     <div className="flex bg-[#F0FAFA]">
       <Sidebar role="realtor" />
 
-      <main className="flex-1 min-h-screen p-8">
+      <main className="flex-1 p-8">
         <div className="max-w-3xl">
 
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-slate-900">Build Your System</h1>
-            <p className="text-sm text-[#0A4A50] mt-1">Design the weekly routine that moves your business forward.</p>
+          {/* ── Header ───────────────────────────────────────────────────────── */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-semibold text-slate-900">Finding My System</h1>
+            <p className="text-sm text-[#0A4A50] mt-1">
+              Build the weekly accountability system that fits how you want to work.
+            </p>
           </div>
 
-          {/* ── Section A: Coach Tasks ─────────────────────────────────────── */}
-          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-            Coach-Set Tasks
-          </h2>
-
-          {coachTasks.length === 0 ? (
-            <div className="bg-white border border-[#B2DFDB] rounded-xl px-5 py-4 mb-8">
-              <p className="text-sm text-slate-500">No tasks have been set by your coach yet.</p>
-            </div>
-          ) : (
-            <div className="bg-white border border-[#B2DFDB] rounded-xl overflow-hidden mb-8">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-teal-100">
-                    <th className="text-left px-5 py-3 text-xs text-slate-500 font-semibold uppercase tracking-wider">Task</th>
-                    <th className="text-left px-3 py-3 text-xs text-slate-500 font-semibold uppercase tracking-wider">Type</th>
-                    <th className="text-right px-5 py-3 text-xs text-slate-500 font-semibold uppercase tracking-wider">Pts</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-teal-50">
-                  {coachTasks.map((t, i) => (
-                    <tr key={i} className="text-slate-600">
-                      <td className="px-5 py-3">{t.task}</td>
-                      <td className="px-3 py-3">
-                        <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">
-                          {t.input_type === "count" ? "Count" : "Yes/No"}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-right font-medium text-[#0D5C63]">{t.points}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <p className="text-xs text-slate-400 px-5 py-2.5 border-t border-teal-50">
-                These tasks are set by your coach and cannot be edited here.
-              </p>
+          {/* ── Coach tasks (collapsed) ───────────────────────────────────────── */}
+          {coachTasks.length > 0 && (
+            <div className="bg-slate-50 border border-slate-200 rounded-xl mb-8">
+              <button
+                type="button"
+                onClick={() => setShowCoach((v) => !v)}
+                className="w-full flex items-center justify-between px-5 py-3.5 text-left"
+              >
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Tasks set by your coach — for reference only
+                </span>
+                <svg
+                  className={`w-4 h-4 text-slate-400 transition-transform ${showCoach ? "rotate-180" : ""}`}
+                  viewBox="0 0 16 16" fill="none"
+                >
+                  <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5"
+                        strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {showCoach && (
+                <div className="border-t border-slate-200">
+                  <table className="w-full text-sm">
+                    <tbody className="divide-y divide-slate-100">
+                      {coachTasks.map((t, i) => (
+                        <tr key={i} className="text-slate-400">
+                          <td className="px-5 py-2.5">{t.task}</td>
+                          <td className="px-3 py-2.5 whitespace-nowrap">
+                            <span className="text-xs bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">
+                              {t.input_type === "count" ? `Count ×${t.target ?? ""}` : "Checkbox"}
+                            </span>
+                          </td>
+                          <td className="px-5 py-2.5 text-right text-xs text-slate-400">{t.points}pt</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
-          {/* ── Section B ─────────────────────────────────────────────────── */}
-          <div className="border-t border-slate-200 my-8" />
-
-          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-5">
-            Build Your Own System
-          </h2>
-
-          {/* Step 1 — Methodology ─────────────────────────────────────────── */}
+          {/* ── System selector ───────────────────────────────────────────────── */}
           <div className="mb-6">
-            <h3 className="text-sm font-semibold text-[#0D5C63] mb-1">Step 1 — Choose Your Methodology</h3>
-            <p className="text-xs text-slate-500 mb-4">Pick the framework that resonates with how you want to work.</p>
-            <div className="grid grid-cols-2 gap-3">
-              {METHODOLOGIES.map((m) => {
-                const sel = selectedKey === m.key;
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+              Choose a system
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              {SYSTEM_NAMES.map((name) => {
+                const active = activePreset === name;
                 return (
                   <button
-                    key={m.key}
-                    onClick={() => selectMethodology(m.key)}
-                    className={`text-left p-4 rounded-xl border transition-all
-                                ${sel
-                                  ? "border-[#0D5C63] bg-teal-50 ring-2 ring-[#0D5C63]/20"
-                                  : "border-[#B2DFDB] bg-white hover:border-[#0D5C63]"}`}
+                    key={name}
+                    type="button"
+                    onClick={() => selectSystem(name)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors
+                      ${active
+                        ? "bg-[#0D5C63] border-[#0D5C63] text-white font-semibold"
+                        : "bg-white border-[#B2DFDB] text-[#0D5C63] hover:border-[#0D5C63]"}`}
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${m.accent}`} />
-                        <span className="font-semibold text-sm text-[#0D5C63]">{m.name}</span>
-                      </div>
-                      {sel && (
-                        <span className="shrink-0 w-5 h-5 rounded-full bg-[#0D5C63] flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" viewBox="0 0 12 10" fill="none">
-                            <path d="M1 5l3.5 3.5L11 1" stroke="currentColor" strokeWidth="2"
-                                  strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </span>
-                      )}
-                    </div>
-                    {m.author && <p className="text-xs text-slate-400 mb-1.5 italic">{m.author}</p>}
-                    <p className="text-xs text-slate-600 leading-relaxed">{m.description}</p>
+                    {name}
                   </button>
                 );
               })}
             </div>
+            {activePreset && PRESETS[activePreset] && (
+              <p className="text-xs italic text-slate-400 mt-2">{PRESETS[activePreset].note}</p>
+            )}
           </div>
 
-          {/* Step 2 — Weekly commitment ───────────────────────────────────── */}
-          {selectedKey && (
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-[#0D5C63] mb-1">Step 2 — Set Your Weekly Commitment</h3>
-              <p className="text-xs text-slate-500 mb-4">How much focused time will you dedicate to lead generation each week?</p>
-              <div className="bg-white border border-[#B2DFDB] rounded-xl p-5">
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-medium text-slate-600">Hours per week dedicated to lead generation</label>
-                    <input
-                      type="number" min={1} max={40} value={hours}
-                      onChange={(e) => setHours(Math.max(1, Math.min(40, Number(e.target.value))))}
-                      className="px-3 py-2 text-sm border border-[#B2DFDB] rounded-lg focus:outline-none focus:border-[#0D5C63]"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-medium text-slate-600">Days per week you&apos;ll prospect</label>
-                    <input
-                      type="number" min={1} max={7} value={days}
-                      onChange={(e) => setDays(Math.max(1, Math.min(7, Number(e.target.value))))}
-                      className="px-3 py-2 text-sm border border-[#B2DFDB] rounded-lg focus:outline-none focus:border-[#0D5C63]"
-                    />
-                  </div>
+          {/* ── Hours / week ──────────────────────────────────────────────────── */}
+          <div className="flex items-center gap-3 mb-8">
+            <span className="text-xs font-medium text-slate-600 shrink-0">Hours / week</span>
+            <input
+              type="number"
+              min={10} max={60} step={5}
+              value={weeklyHours}
+              onChange={(e) => changeHours(Number(e.target.value))}
+              className="w-20 text-sm border border-[#B2DFDB] rounded-lg px-3 py-1.5
+                         text-slate-800 bg-white focus:outline-none focus:border-[#0D5C63]"
+            />
+            <span className="text-xs text-slate-500">
+              {weeklyHours} hrs/week &middot; {hrsPerDay} hrs/day average
+            </span>
+          </div>
+
+          {/* ── Task table ────────────────────────────────────────────────────── */}
+          {activePreset ? (
+            <div className="bg-white border border-[#B2DFDB] rounded-xl overflow-hidden mb-4">
+
+              {tasks.length === 0 ? (
+                <div className="px-5 py-10 text-center">
+                  <p className="text-sm text-slate-400 mb-1">No tasks yet.</p>
+                  <p className="text-xs text-slate-400">Add a custom task below to get started.</p>
                 </div>
-                <div className="bg-teal-50 border border-teal-100 rounded-lg px-4 py-2.5">
-                  <p className="text-sm text-[#0D5C63]">
-                    That&apos;s <span className="font-semibold">{hoursPerDay} hours</span> per prospecting day
-                    &mdash; <span className="font-semibold">{minsPerDay} minutes</span> of focused lead generation daily.
-                  </p>
+              ) : (
+                <div className="p-4 space-y-5">
+                  {seenCats.map((cat) => {
+                    const catTasks = tasks
+                      .map((t, i) => ({ t, i }))
+                      .filter(({ t }) => t.category === cat);
+
+                    return (
+                      <div key={cat}>
+                        {/* Category label */}
+                        <div className="mb-2">
+                          <span className="inline-block text-[11px] font-semibold uppercase tracking-wider
+                                           text-teal-600 bg-teal-100 rounded px-3 py-1.5">
+                            {cat}
+                          </span>
+                        </div>
+
+                        {/* Task rows — 2-col grid matching coach form */}
+                        <div className="grid grid-cols-2 gap-x-6">
+                          {catTasks.map(({ t, i }) => {
+                            const isNumeric = t.type === "count" || t.input_type === "count";
+                            return (
+                              <div key={i} className="py-2 border-b border-teal-50 last:border-0 space-y-1.5">
+                                {/* Line 1: enable toggle + editable name */}
+                                <div className="flex items-center gap-2">
+                                  <Toggle
+                                    checked={t.enabled}
+                                    onChange={() => updateTask(i, { enabled: !t.enabled })}
+                                  />
+                                  <input
+                                    type="text"
+                                    value={t.task}
+                                    onChange={(e) => updateTask(i, { task: e.target.value })}
+                                    placeholder="Task description"
+                                    className={`flex-1 min-w-0 text-sm bg-teal-50 border border-teal-200
+                                                rounded-lg px-2 py-1 focus:outline-none focus:border-teal-400
+                                                transition-colors
+                                                ${t.enabled ? "text-teal-800" : "text-teal-300"}`}
+                                  />
+                                </div>
+
+                                {/* Line 2: type toggle, target, pts, delete */}
+                                <div className="flex items-center gap-2 justify-end flex-wrap">
+                                  {/* Checkbox / Numeric toggle */}
+                                  <div className="flex rounded-lg overflow-hidden border border-teal-200 text-xs shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={() => updateTask(i, { type: "checkbox", input_type: "checkbox" })}
+                                      className={`px-2 py-1 transition-colors
+                                        ${!isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
+                                    >
+                                      ✓ Checkbox
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateTask(i, { type: "count", input_type: "count" })}
+                                      className={`px-2 py-1 transition-colors
+                                        ${isNumeric ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-50"}`}
+                                    >
+                                      # Numeric
+                                    </button>
+                                  </div>
+
+                                  {isNumeric && (
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <span className="text-xs text-teal-400">target</span>
+                                      <input
+                                        type="number" min={1}
+                                        value={t.target ?? 1}
+                                        onChange={(e) => updateTask(i, { target: Number(e.target.value) })}
+                                        className="w-14 border border-teal-200 rounded-lg px-2 py-1
+                                                   text-xs text-teal-800 focus:outline-none focus:border-teal-400"
+                                      />
+                                    </div>
+                                  )}
+
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <span className="text-xs text-teal-400">pts</span>
+                                    <input
+                                      type="number" min={0}
+                                      value={t.points}
+                                      onChange={(e) => updateTask(i, { points: Number(e.target.value) })}
+                                      className="w-14 border border-teal-200 rounded-lg px-2 py-1
+                                                 text-xs text-teal-800 focus:outline-none focus:border-teal-400"
+                                    />
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteTask(i)}
+                                    className="shrink-0 text-teal-300 hover:text-red-500 transition-colors text-base px-1"
+                                    aria-label="Remove task"
+                                  >
+                                    &times;
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+              )}
+
+              {/* Add custom task */}
+              <div className="px-4 pb-4 pt-2 border-t border-teal-50">
+                {showAddForm ? (
+                  <div className="flex items-center gap-2 flex-wrap p-3 bg-teal-50 border border-teal-200 rounded-lg">
+                    <select
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      className="text-xs border border-teal-200 rounded-lg px-2 py-1.5 text-teal-700
+                                 bg-white focus:outline-none focus:border-teal-400 shrink-0"
+                    >
+                      {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+
+                    <input
+                      type="text"
+                      value={newTaskName}
+                      onChange={(e) => setNewTaskName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomTask())}
+                      placeholder="Task name"
+                      autoFocus
+                      className="flex-1 min-w-0 text-xs border border-teal-200 rounded-lg px-2 py-1.5
+                                 text-teal-800 bg-white focus:outline-none focus:border-teal-400"
+                    />
+
+                    <div className="flex rounded-lg overflow-hidden border border-teal-200 text-xs shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setNewTaskType("checkbox")}
+                        className={`px-2 py-1.5 transition-colors
+                          ${newTaskType === "checkbox" ? "bg-teal-500 text-white" : "text-teal-500 bg-white hover:bg-teal-50"}`}
+                      >
+                        ✓ Checkbox
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewTaskType("count")}
+                        className={`px-2 py-1.5 transition-colors
+                          ${newTaskType === "count" ? "bg-teal-500 text-white" : "text-teal-500 bg-white hover:bg-teal-50"}`}
+                      >
+                        # Numeric
+                      </button>
+                    </div>
+
+                    {newTaskType === "count" && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-xs text-teal-400">target</span>
+                        <input
+                          type="number" min={1}
+                          value={newTaskTarget}
+                          onChange={(e) => setNewTaskTarget(Number(e.target.value))}
+                          className="w-14 text-xs border border-teal-200 rounded-lg px-2 py-1.5
+                                     text-teal-800 bg-white focus:outline-none focus:border-teal-400"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-xs text-teal-400">pts</span>
+                      <input
+                        type="number" min={0}
+                        value={newTaskPoints}
+                        onChange={(e) => setNewTaskPoints(Number(e.target.value))}
+                        className="w-14 text-xs border border-teal-200 rounded-lg px-2 py-1.5
+                                   text-teal-800 bg-white focus:outline-none focus:border-teal-400"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={addCustomTask}
+                      className="text-xs text-white bg-teal-500 hover:bg-teal-600
+                                 px-3 py-1.5 rounded-lg transition-colors shrink-0"
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddForm(false);
+                        setNewTaskName(""); setNewTaskType("checkbox");
+                        setNewTaskTarget(1); setNewTaskPoints(5);
+                      }}
+                      className="text-xs text-teal-400 hover:text-teal-600 px-2 py-1.5 shrink-0"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowAddForm(true)}
+                    className="text-xs text-teal-500 hover:text-teal-700 border border-dashed
+                               border-teal-200 hover:border-teal-400 rounded-lg px-3 py-1.5 transition-colors"
+                  >
+                    + Add custom task
+                  </button>
+                )}
               </div>
+            </div>
+          ) : (
+            <div className="bg-white border border-[#B2DFDB] rounded-xl px-5 py-10 text-center mb-4">
+              <p className="text-sm text-slate-400">Select a system above to get started.</p>
             </div>
           )}
 
-          {/* Step 3 — Task list ───────────────────────────────────────────── */}
-          {selectedKey && (
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-[#0D5C63] mb-1">Step 3 — Build Your Weekly Tasks</h3>
-              <p className="text-xs text-slate-500 mb-4">
-                Edit the suggested tasks below, or build from scratch. These become your weekly scorecard.
-              </p>
+          {/* ── Point total ───────────────────────────────────────────────────── */}
+          {activePreset && (
+            <p className={`text-sm font-medium mb-4
+              ${totalExact ? "text-green-600" : totalOver ? "text-red-500" : "text-amber-500"}`}>
+              Total: {enabledTotal} / 100 pts
+              {totalExact ? " ✓" : totalOver
+                ? ` \u2014 remove ${enabledTotal - 100} pts`
+                : ` \u2014 add ${100 - enabledTotal} pts`}
+            </p>
+          )}
 
-              <div className="bg-white border border-[#B2DFDB] rounded-xl overflow-hidden">
-                {myTasks.length === 0 ? (
-                  <div className="px-5 py-8 text-center">
-                    <p className="text-sm text-slate-400 mb-1">No custom tasks yet.</p>
-                    <p className="text-xs text-slate-400">Add tasks below to build your weekly system.</p>
-                  </div>
-                ) : (
-                  <ul className="divide-y divide-teal-50">
-                    {myTasks.map((t, i) => (
-                      <li key={i} className="flex items-center gap-3 px-4 py-3">
-                        <div className="flex flex-col gap-0.5">
-                          <button
-                            onClick={() => moveTask(i, -1)}
-                            disabled={i === 0}
-                            aria-label="Move up"
-                            className="w-6 h-5 flex items-center justify-center text-slate-300
-                                       hover:text-slate-500 disabled:opacity-20 transition-colors"
-                          >
-                            <svg className="w-3 h-3" viewBox="0 0 12 8" fill="none">
-                              <path d="M1 6l5-5 5 5" stroke="currentColor" strokeWidth="1.5"
-                                    strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => moveTask(i, 1)}
-                            disabled={i === myTasks.length - 1}
-                            aria-label="Move down"
-                            className="w-6 h-5 flex items-center justify-center text-slate-300
-                                       hover:text-slate-500 disabled:opacity-20 transition-colors"
-                          >
-                            <svg className="w-3 h-3" viewBox="0 0 12 8" fill="none">
-                              <path d="M1 2l5 5 5-5" stroke="currentColor" strokeWidth="1.5"
-                                    strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                        </div>
+          {/* ── Error ─────────────────────────────────────────────────────────── */}
+          {error && (
+            <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg
+                          px-4 py-2.5 mb-4">
+              {error}
+            </p>
+          )}
 
-                        <span className="flex-1 text-sm text-slate-700">{t.task}</span>
-
-                        <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">
-                          {t.input_type === "count" ? "Count" : "Yes/No"}
-                        </span>
-                        {t.input_type === "count" && t.target !== undefined && (
-                          <span className="text-xs text-slate-400">&times;{t.target}</span>
-                        )}
-                        <span className="text-xs font-semibold text-[#0D5C63] w-10 text-right">
-                          {t.points}pt
-                        </span>
-
-                        <button
-                          onClick={() => removeTask(i)}
-                          aria-label="Remove task"
-                          className="w-6 h-6 flex items-center justify-center text-slate-300
-                                     hover:text-red-400 transition-colors"
-                        >
-                          <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none">
-                            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5"
-                                  strokeLinecap="round"/>
-                          </svg>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                <AddTaskRow onAdd={addTask} />
-              </div>
-
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={attemptSave}
-                  disabled={saving}
-                  className="px-6 py-2.5 text-sm font-semibold text-white bg-[#0D5C63]
-                             rounded-xl hover:bg-[#0A4A50] disabled:opacity-60 transition-colors"
-                >
-                  {saving ? "Saving\u2026" : "Save My System"}
-                </button>
-              </div>
-            </div>
+          {/* ── Save button ───────────────────────────────────────────────────── */}
+          {activePreset && (
+            <button
+              type="button"
+              onClick={attemptSave}
+              disabled={saving}
+              className="bg-[#FF6B35] hover:bg-orange-600 disabled:opacity-50 text-white
+                         font-medium text-sm px-6 py-2.5 rounded-xl transition-colors"
+            >
+              {saving ? "Saving\u2026" : "Save My System"}
+            </button>
           )}
 
         </div>
