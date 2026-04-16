@@ -15,26 +15,26 @@ interface LicensingStep {
   title:       string;
   description: string;
   link?:       { label: string; href: string };
-  note?:       string; // amber callout
+  note?:       string;
 }
 
 const NEW_STEPS: LicensingStep[] = [
   {
     key:         "licensing_new_1",
     title:       "NBREA — Membership Application",
-    description: "Complete the membership application on the NBREA portal. You'll receive a receipt — keep it for Step 2.",
+    description: "Complete the membership application on the NBREA portal. Our broker receives a notification immediately when it's submitted. Once we approve on our end, you'll receive an option to pay. Once paid, download your member certificate — you'll need it for Step 2.",
     link:        { label: "members.nbrea.ca", href: "https://members.nbrea.ca/mpower/membership/membership-form.action" },
   },
   {
     key:         "licensing_new_2",
     title:       "FCNB — Licence Application",
-    description: "Log into the FCNB portal and start a new application. Attach your NBREA receipt and criminal record check. Once submitted, email jacques@creativrealty.com — we don't receive automatic notifications.",
+    description: "Log into the FCNB portal and start a new application. Attach your NBREA member certificate from Step 1 and your criminal record check. Once submitted, email martin@creativrealty.com — we don't receive automatic notifications.",
     link:        { label: "portal.fcnb.ca", href: "https://portal.fcnb.ca/logon/" },
   },
   {
     key:         "licensing_new_3",
     title:       "NBRE Board — Final Transfer",
-    description: "We complete this step on our end. Typically takes 48 hours. Once done, you're official under Creativ Realty.",
+    description: "Once you've received confirmation from FCNB that your application is complete, send an email to martin@creativrealty.com and we will complete this step on our end. Typically takes 48 hours. Once done, you're official under Creativ Realty.",
     note:        "Paying an extra $75 at the FCNB step expedites processing to ~48 hours instead of 10 business days. Usually worth it.",
   },
 ];
@@ -43,24 +43,24 @@ const TRANSFER_STEPS: LicensingStep[] = [
   {
     key:         "licensing_xfer_1",
     title:       "NBREA — Membership Transfer",
-    description: "Log into NBREA and perform a membership transfer (not a new application). Our broker receives a notification once submitted. After approval, you'll be prompted to pay and download your member certificate.",
+    description: "Log into NBREA and perform a membership transfer (not a new application). Our broker receives a notification immediately once submitted. Once we approve on our end, you'll receive an option to pay. Once paid, download your member certificate.",
     link:        { label: "members.nbrea.ca", href: "https://members.nbrea.ca/mpower/membership/transfer-form.action" },
   },
   {
     key:         "licensing_xfer_2",
     title:       "FCNB — New Licence Application",
-    description: "Attach the member certificate from Step 1. No new criminal check needed. Notify jacques@creativrealty.com once submitted. Pay the $75 rush fee to minimize downtime.",
+    description: "Attach the member certificate from Step 1. No new criminal check needed. Once submitted, email martin@creativrealty.com. Pay the $75 rush fee if you want to minimize downtime.",
     link:        { label: "portal.fcnb.ca", href: "https://portal.fcnb.ca/logon/" },
   },
   {
     key:         "licensing_xfer_3",
     title:       "Previous Brokerage Cancels Your Membership",
-    description: "You'll be unlicensed for up to 48 hours (with the rush fee). Plan accordingly — avoid active transactions mid-switch if possible.",
+    description: "At this point you'll be unlicensed for up to 48 hours (with the rush fee). Plan accordingly — avoid active transactions mid-switch if possible.",
   },
   {
     key:         "licensing_xfer_4",
     title:       "NBRE Board — Final Transfer",
-    description: "We complete this step. Usually under 24 hours. You're now active under Creativ Realty.",
+    description: "Once you've received confirmation from FCNB that your application is complete, send an email to martin@creativrealty.com and we will complete this step on our end. Usually under 24 hours. You're now active under Creativ Realty.",
   },
 ];
 
@@ -74,7 +74,7 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
         <span className="text-sm font-medium text-[#0D5C63]">{done} of {total} steps completed</span>
         <span className="text-sm font-semibold text-[#0D5C63]">{pct}%</span>
       </div>
-      <div className="w-full h-2.5 bg-teal-100 rounded-full overflow-hidden">
+      <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
         <div
           className="h-full bg-[#0D5C63] rounded-full transition-all duration-300"
           style={{ width: `${pct}%` }}
@@ -95,7 +95,6 @@ function StepCard({
   return (
     <div className={`bg-white border rounded-xl p-5 flex gap-4 transition-colors
                     ${checked ? "border-[#B2DFDB] opacity-80" : "border-[#B2DFDB]"}`}>
-      {/* Step number */}
       <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold mt-0.5
                       ${checked ? "bg-[#0D5C63] text-white" : "bg-teal-100 text-[#0D5C63]"}`}>
         {checked
@@ -106,7 +105,6 @@ function StepCard({
           : index + 1}
       </div>
 
-      {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
           <h3 className={`text-sm font-semibold ${checked ? "line-through text-teal-400" : "text-[#0D5C63]"}`}>
@@ -124,15 +122,14 @@ function StepCard({
           </button>
         </div>
 
-        <p className="text-sm text-teal-700 mt-1.5 leading-relaxed">{step.description}</p>
+        <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{step.description}</p>
 
         {step.link && (
           <a
             href={step.link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-[#0D5C63] font-medium mt-2
-                       hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-[#0D5C63] font-medium mt-2 hover:underline"
           >
             → {step.link.label}
           </a>
@@ -215,11 +212,10 @@ export default function LicensingPage() {
         <div className="max-w-2xl">
 
           <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-[#0D5C63]">Licensing</h1>
-            <p className="text-sm text-teal-500 mt-1">Complete each step to get your licence under Creativ Realty.</p>
+            <h1 className="text-2xl font-semibold text-slate-900">Licensing</h1>
+            <p className="text-sm text-[#0A4A50] mt-1">Complete each step to get your licence under Creativ Realty.</p>
           </div>
 
-          {/* Tabs */}
           <div className="flex gap-2 mb-6">
             {(["new", "transfer"] as Tab[]).map((t) => (
               <button

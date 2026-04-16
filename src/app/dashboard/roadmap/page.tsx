@@ -459,7 +459,7 @@ export default function RoadmapPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/"); return; }
-    if (status !== "authenticated")   return;
+    if (status !== "authenticated") return;
     const email = session?.user?.email;
     if (!email) return;
 
@@ -495,7 +495,7 @@ export default function RoadmapPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0FAFA] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
       </div>
     );
@@ -510,16 +510,16 @@ export default function RoadmapPage() {
   const badgeThresholds = [20, 40, 60, 80, 100];
 
   return (
-    <div className="flex min-h-screen bg-teal-50">
+    <div className="flex min-h-screen bg-[#F0FAFA]">
       <Sidebar role="realtor" />
 
       <main className="flex-1 p-8 overflow-y-auto">
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-teal-800">My Roadmap</h1>
-          <p className="text-sm text-teal-500 mt-1">
-            {LEVEL_LABELS[userLevel] ?? "New Realtor\u00ae"} · {activeLevel.subtitle}
+          <h1 className="text-2xl font-semibold text-slate-900">My Roadmap</h1>
+          <p className="text-sm text-[#0A4A50] mt-1">
+            {LEVEL_LABELS[userLevel] ?? "New Realtor\u00ae"} \u00b7 {activeLevel.subtitle}
           </p>
         </div>
 
@@ -536,8 +536,8 @@ export default function RoadmapPage() {
                 onClick={() => setActiveTab(lvl.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors border
                   ${isActive
-                    ? "bg-teal-600 border-teal-600 text-white"
-                    : "bg-white border-teal-200 text-teal-600 hover:border-teal-400"}`}
+                    ? "bg-[#0D5C63] border-[#0D5C63] text-white"
+                    : "bg-white border-[#B2DFDB] text-[#0D5C63] hover:border-[#0D5C63]"}`}
               >
                 {isUser && <span title="Your level">★</span>}
                 {lvl.label}
@@ -550,22 +550,22 @@ export default function RoadmapPage() {
         </div>
 
         {/* Progress bar */}
-        <div className="bg-white border border-teal-200 rounded-xl p-5 mb-6">
+        <div className="bg-white border border-[#B2DFDB] rounded-xl p-5 mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-teal-800">{done} of {total} milestones</span>
-            <span className="text-sm font-semibold text-teal-600">{pct}%</span>
+            <span className="text-sm font-medium text-slate-700">{done} of {total} milestones</span>
+            <span className="text-sm font-semibold text-[#0D5C63]">{pct}%</span>
           </div>
-          <div className="w-full h-3 bg-teal-100 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-teal-500 rounded-full transition-all duration-300"
+              className="h-full bg-[#0D5C63] rounded-full transition-all duration-300"
               style={{ width: `${pct}%` }}
             />
           </div>
         </div>
 
         {/* Badges */}
-        <div className="bg-white border border-teal-200 rounded-xl p-5 mb-6">
-          <h2 className="text-xs font-semibold text-teal-500 uppercase tracking-wider mb-4">Level Badges</h2>
+        <div className="bg-white border border-[#B2DFDB] rounded-xl p-5 mb-6">
+          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Level Badges</h2>
           <div className="flex gap-3 flex-wrap">
             {activeLevel.badges.map((badge, idx) => {
               const threshold = badgeThresholds[idx];
@@ -611,7 +611,7 @@ export default function RoadmapPage() {
                   </div>
                 )}
 
-                <div className="bg-white border border-teal-200 rounded-xl overflow-hidden">
+                <div className="bg-white border border-[#B2DFDB] rounded-xl overflow-hidden">
                   {/* Group header */}
                   <div className="flex items-center justify-between px-5 py-3.5 border-b border-teal-100">
                     <div className="flex items-center gap-2 min-w-0">
@@ -620,13 +620,13 @@ export default function RoadmapPage() {
                           {group.phase.label}
                         </span>
                       ) : (
-                        <h3 className="text-sm font-semibold text-teal-800">{group.name}</h3>
+                        <h3 className="text-sm font-semibold text-slate-700">{group.name}</h3>
                       )}
                     </div>
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0
                       ${groupDone === groupTotal
                         ? "bg-teal-100 text-teal-700"
-                        : "bg-teal-50 text-teal-500"}`}>
+                        : "bg-teal-50 text-slate-500"}`}>
                       {groupDone}/{groupTotal}
                     </span>
                   </div>
@@ -653,7 +653,7 @@ export default function RoadmapPage() {
                               )}
                             </span>
 
-                            <span className={`text-sm leading-snug flex-1 ${isChecked ? "line-through text-teal-400" : "text-teal-800"}`}>
+                            <span className={`text-sm leading-snug flex-1 ${isChecked ? "line-through text-teal-400" : "text-slate-700"}`}>
                               {it.text}
                             </span>
 

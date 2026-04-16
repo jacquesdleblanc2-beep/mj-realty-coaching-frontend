@@ -116,7 +116,7 @@ export function Sidebar({ role }: SidebarProps) {
               "flex items-center px-5 py-2.5 text-sm transition-colors border-t border-teal-100",
               pathname === "/dashboard/profile"
                 ? "bg-teal-100 text-teal-600 font-medium"
-                : "text-teal-700 hover:bg-teal-50"
+                : "text-slate-700 hover:bg-teal-50"
             )}
           >
             Profile
@@ -173,7 +173,7 @@ function RealtorNav({ pathname, unreadCount }: { pathname: string; unreadCount: 
             <div key={item.href}>
               {/* Section header */}
               <div className="px-5 pt-4 pb-1">
-                <span className="text-[10px] font-bold tracking-widest text-[#0D5C63] uppercase">
+                <span className="text-[10px] font-semibold tracking-widest text-slate-500 uppercase">
                   {item.section}
                 </span>
               </div>
@@ -184,7 +184,7 @@ function RealtorNav({ pathname, unreadCount }: { pathname: string; unreadCount: 
                     "flex items-center px-3 py-2.5 text-sm transition-colors",
                     isParentActive
                       ? "bg-teal-100 text-teal-700 font-medium"
-                      : "text-teal-700 hover:bg-teal-50"
+                      : "text-slate-700 hover:bg-teal-50"
                   )}
                 >
                   {item.label}
@@ -203,7 +203,7 @@ function RealtorNav({ pathname, unreadCount }: { pathname: string; unreadCount: 
                 "flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors font-medium",
                 isParentActive
                   ? "bg-teal-100 text-teal-600"
-                  : "text-teal-800 hover:bg-teal-50"
+                  : "text-slate-700 hover:bg-teal-50"
               )}
             >
               {item.label}
@@ -222,7 +222,7 @@ function RealtorNav({ pathname, unreadCount }: { pathname: string; unreadCount: 
                         "flex items-center justify-between px-2 py-1.5 rounded-md text-xs transition-colors",
                         isActive
                           ? "bg-teal-100 text-teal-600 font-medium"
-                          : "text-teal-500 hover:bg-teal-50 hover:text-teal-700"
+                          : "text-slate-600 hover:bg-teal-50 hover:text-slate-800"
                       )}
                     >
                       {sub.label}
@@ -259,7 +259,7 @@ function CoachNav({ pathname, unreadCount }: { pathname: string; unreadCount: nu
               "flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors",
               active
                 ? "bg-teal-100 text-teal-600 font-medium"
-                : "text-teal-700 hover:bg-teal-50"
+                : "text-slate-700 hover:bg-teal-50"
             )}
           >
             {item.label}

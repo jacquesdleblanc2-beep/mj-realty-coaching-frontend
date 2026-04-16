@@ -15,11 +15,11 @@ async function resolveRealtorAndRedirect(
   try {
     const existing = await getRealtorByEmail(email);
     if (existing) {
-      router.push("/dashboard");
+      router.push("/dashboard/setup");
       return;
     }
     await registerSelf(name, email);
-    router.push("/dashboard");
+    router.push("/dashboard/setup");
   } catch {
     router.push("/no-access");
   }
