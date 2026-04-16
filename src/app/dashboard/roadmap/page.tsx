@@ -16,8 +16,9 @@ interface RoadmapItem {
 }
 
 interface RoadmapGroup {
-  name:  string;
-  items: RoadmapItem[];
+  name:   string;
+  phase?: { label: string; color: "green" | "blue" | "orange" };
+  items:  RoadmapItem[];
 }
 
 interface RoadmapLevel {
@@ -33,6 +34,47 @@ function item(text: string, academy = false): RoadmapItem {
 }
 
 const ROADMAP_DATA: RoadmapLevel[] = [
+  {
+    id:       "first90",
+    label:    "First 90 Days",
+    subtitle: "Days 1–90 · Your fast-start action plan at Creativ Realty",
+    badges:   ["Day 1 Done", "Halfway There", "Phase 2 Started", "Phase 3 Started", "90 Days Complete"],
+    groups: [
+      {
+        name:  "Phase 1 — Foundation (Days 1–30)",
+        phase: { label: "Foundation · Days 1–30", color: "green" },
+        items: [
+          item("Complete your NBREA membership application"),
+          item("Submit your FCNB licence application under Creativ Realty"),
+          item("Log in to Matrix (MLS) and explore your first listing search"),
+          item("Set up Transaction Desk and read the Intro to Transaction Desk guide"),
+          item("Add your sphere of influence to your CRM (minimum 50 contacts)"),
+        ],
+      },
+      {
+        name:  "Phase 2 — Outreach (Days 31–60)",
+        phase: { label: "Outreach · Days 31–60", color: "blue" },
+        items: [
+          item("Contact every person in your sphere by phone or in-person"),
+          item("Preview 10 active listings in your target area"),
+          item("Complete 3 comparative market analyses (CMAs)"),
+          item("Attend an open house as an observer and take notes"),
+          item("Book your first buyer or seller consultation"),
+        ],
+      },
+      {
+        name:  "Phase 3 — Growth (Days 61–90)",
+        phase: { label: "Growth · Days 61–90", color: "orange" },
+        items: [
+          item("Write your first offer or take your first listing"),
+          item("Post your agent introduction on all social channels"),
+          item("Set up your Google Business Profile"),
+          item("Choose your niche and complete the niche checklist"),
+          item("Write your 90-day business plan and share it with your coach"),
+        ],
+      },
+    ],
+  },
   {
     id:       "new",
     label:    "New Realtor",
@@ -395,10 +437,17 @@ function levelCompletedCount(level: RoadmapLevel, completed: Set<string>): numbe
 }
 
 const LEVEL_LABELS: Record<string, string> = {
-  new:    "New Realtor",
-  y12:    "1–2 Years",
-  y35:    "3–5 Years",
-  y5plus: "5+ Years",
+  first90: "First 90 Days",
+  new:     "New Realtor",
+  y12:     "1–2 Years",
+  y35:     "3–5 Years",
+  y5plus:  "5+ Years",
+};
+
+const PHASE_STYLES: Record<"green" | "blue" | "orange", string> = {
+  green:  "bg-emerald-100 text-emerald-700 border border-emerald-200",
+  blue:   "bg-blue-100 text-blue-700 border border-blue-200",
+  orange: "bg-orange-100 text-orange-700 border border-orange-200",
 };
 
 // ── Page ───────────────────────────────────────────────────────────────────────
@@ -561,8 +610,17 @@ export default function RoadmapPage() {
               <div key={group.name} className="bg-white border border-teal-200 rounded-xl overflow-hidden">
                 {/* Group header */}
                 <div className="flex items-center justify-between px-5 py-3.5 border-b border-teal-100">
-                  <h3 className="text-sm font-semibold text-teal-800">{group.name}</h3>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full
+                  <div className="flex items-center gap-2 min-w-0">
+                    {group.phase && (
+                      <span className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${PHASE_STYLES[group.phase.color]}`}>
+                        {group.phase.label}
+                      </span>
+                    )}
+                    {!group.phase && (
+                      <h3 className="text-sm font-semibold text-teal-800">{group.name}</h3>
+                    )}
+                  </div>
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0
                     ${groupDone === groupTotal
                       ? "bg-teal-100 text-teal-700"
                       : "bg-teal-50 text-teal-500"}`}>
