@@ -491,7 +491,7 @@ export default function SystemPage() {
       <Sidebar role="realtor" />
 
       <main className="flex-1 p-8">
-        <div className="max-w-3xl">
+        <div>
 
           {/* ── Header ───────────────────────────────────────────────────────── */}
           <div className="mb-8">

@@ -58,6 +58,10 @@ const realtorNav: NavItem[] = [
     label:   "My Coaching",
     href:    "/dashboard/coaching",
     section: "MY COACHING",
+    sub: [
+      { label: "Overview", href: "/dashboard" },
+      { label: "My Week",  href: "/dashboard" },
+    ],
   },
 ];
 
@@ -177,18 +181,31 @@ function RealtorNav({ pathname, unreadCount }: { pathname: string; unreadCount: 
                   {item.section}
                 </span>
               </div>
-              <div className="border-l-2 border-[#FF6B35] ml-3 mr-2">
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center px-3 py-2.5 text-sm transition-colors",
-                    isParentActive
-                      ? "bg-teal-100 text-teal-700 font-medium"
-                      : "text-slate-700 hover:bg-teal-50"
-                  )}
-                >
+              <div className="border-l-2 border-[#FF6B35] ml-3 mr-2 px-2 pt-1">
+                <span className="flex items-center px-3 py-2 text-sm font-medium text-slate-700">
                   {item.label}
-                </Link>
+                </span>
+                {item.sub && (
+                  <div className="ml-3 mt-0.5 mb-1 border-l border-teal-200 pl-2 space-y-0.5">
+                    {item.sub.map((sub) => {
+                      const isActive = pathname === sub.href;
+                      return (
+                        <Link
+                          key={sub.label}
+                          href={sub.href}
+                          className={cn(
+                            "flex items-center px-2 py-1.5 rounded-md text-xs transition-colors",
+                            isActive
+                              ? "bg-teal-100 text-teal-600 font-medium"
+                              : "text-slate-600 hover:bg-teal-50 hover:text-slate-800"
+                          )}
+                        >
+                          {sub.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           );
