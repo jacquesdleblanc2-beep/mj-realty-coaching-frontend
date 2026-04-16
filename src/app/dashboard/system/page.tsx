@@ -405,10 +405,10 @@ export default function SystemPage() {
   const hoursPerDay = days > 0 ? (hours / days).toFixed(1) : "0";
 
   return (
-    <div className="flex min-h-screen bg-[#F0FAFA]">
+    <div className="flex bg-[#F0FAFA]">
       <Sidebar role="realtor" />
 
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 min-h-screen p-8">
         <div className="max-w-3xl">
 
           <div className="mb-6">
