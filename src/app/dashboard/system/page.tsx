@@ -455,13 +455,12 @@ export default function SystemPage() {
             </div>
           )}
 
-          {/* ── Section B divider ──────────────────────────────────────────── */}
-          <div className="flex items-center gap-3 mb-5">
-            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider shrink-0">
-              Build Your Own System
-            </h2>
-            <div className="flex-1 h-px bg-teal-200" />
-          </div>
+          {/* ── Section B ─────────────────────────────────────────────────── */}
+          <div className="border-t border-slate-200 my-8" />
+
+          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-5">
+            Build Your Own System
+          </h2>
 
           {/* Step 1 — Methodology ─────────────────────────────────────────── */}
           <div className="mb-6">
