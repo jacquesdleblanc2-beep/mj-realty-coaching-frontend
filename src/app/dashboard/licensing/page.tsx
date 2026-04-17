@@ -28,13 +28,13 @@ const NEW_STEPS: LicensingStep[] = [
   {
     key:         "licensing_new_2",
     title:       "FCNB — Licence Application",
-    description: "Log into the FCNB portal and start a new application. Attach your NBREA member certificate from Step 1 and your criminal record check. Once submitted, email martin@creativrealty.com — we don't receive automatic notifications.",
+    description: "Log into the FCNB portal and start a new application. Attach your NBREA member certificate from Step 1 and your criminal record check. Once submitted, email martin.gallant@therealbrokerage.com — we don't receive automatic notifications.",
     link:        { label: "portal.fcnb.ca", href: "https://portal.fcnb.ca/logon/" },
   },
   {
     key:         "licensing_new_3",
     title:       "NBRE Board — Final Transfer",
-    description: "Once you've received confirmation from FCNB that your application is complete, send an email to martin@creativrealty.com and we will complete this step on our end. Typically takes 48 hours. Once done, you're official under Creativ Realty.",
+    description: "Once you've received confirmation from FCNB that your application is complete, send an email to martin.gallant@therealbrokerage.com and we will complete this step on our end. Typically takes 48 hours. Once done, you're official under Creativ Realty.",
     note:        "Paying an extra $75 at the FCNB step expedites processing to ~48 hours instead of 10 business days. Usually worth it.",
   },
 ];
@@ -49,7 +49,7 @@ const TRANSFER_STEPS: LicensingStep[] = [
   {
     key:         "licensing_xfer_2",
     title:       "FCNB — New Licence Application",
-    description: "Attach the member certificate from Step 1. No new criminal check needed. Once submitted, email martin@creativrealty.com. Pay the $75 rush fee if you want to minimize downtime.",
+    description: "Attach the member certificate from Step 1. No new criminal check needed. Once submitted, email martin.gallant@therealbrokerage.com. Pay the $75 rush fee if you want to minimize downtime.",
     link:        { label: "portal.fcnb.ca", href: "https://portal.fcnb.ca/logon/" },
   },
   {
@@ -60,7 +60,7 @@ const TRANSFER_STEPS: LicensingStep[] = [
   {
     key:         "licensing_xfer_4",
     title:       "NBRE Board — Final Transfer",
-    description: "Once you've received confirmation from FCNB that your application is complete, send an email to martin@creativrealty.com and we will complete this step on our end. Usually under 24 hours. You're now active under Creativ Realty.",
+    description: "Once you've received confirmation from FCNB that your application is complete, send an email to martin.gallant@therealbrokerage.com and we will complete this step on our end. Usually under 24 hours. You're now active under Creativ Realty.",
   },
 ];
 
