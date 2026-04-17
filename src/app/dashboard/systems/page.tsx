@@ -75,7 +75,7 @@ const PLATFORMS: Platform[] = [
   },
 ];
 
-const TOTAL = PLATFORMS.length; // 6 active platforms
+const TOTAL = PLATFORMS.length; // 6 active platforms (Rezen and Canva excluded from count)
 
 // ── Platform type badge ────────────────────────────────────────────────────────
 
@@ -179,7 +179,7 @@ export default function SystemsPage() {
 
           <div className="mb-6">
             <h1 className="text-2xl font-semibold text-slate-900">Systems Setup</h1>
-            <p className="text-sm text-[#0A4A50] mt-1">Get connected to every tool you'll use as a Creativ Realty agent.</p>
+            <p className="text-sm text-[#0A4A50] mt-1">Get connected to every tool you&apos;ll use as a Creativ Realty agent.</p>
           </div>
 
           <ProgressBar done={doneCount} total={TOTAL} />
@@ -198,7 +198,7 @@ export default function SystemsPage() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="font-semibold text-sm text-[#0D5C63]">{p.name}</span>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                       <TypeBadge type={p.type} />
                       {done && (
                         <span className="w-5 h-5 rounded-full bg-[#0D5C63] flex items-center justify-center shrink-0">
@@ -212,7 +212,7 @@ export default function SystemsPage() {
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">{p.description}</p>
                   {p.note && (
-                    <p className="text-xs text-slate-500 italic mt-2">{p.note}</p>
+                    <p className="text-xs text-slate-500 italic">{p.note}</p>
                   )}
                   <a
                     href={p.href}
@@ -236,10 +236,10 @@ export default function SystemsPage() {
             })}
 
             {/* ── Rezen — Coming Soon ───────────────────────────────────────── */}
-            <div className="bg-white border border-[#B2DFDB] rounded-xl p-4 flex flex-col gap-2 opacity-60 grayscale">
+            <div className="bg-[#F0FAFA]/50 border-2 border-dashed border-[#B2DFDB] rounded-xl p-4 flex flex-col gap-2 cursor-default">
               <div className="flex items-start justify-between gap-2">
                 <span className="font-semibold text-sm text-[#0D5C63]">Rezen</span>
-                <span className="bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full shrink-0">
+                <span className="bg-[#0D5C63] text-white text-xs px-3 py-1 rounded-full font-semibold shrink-0">
                   Coming Soon
                 </span>
               </div>
@@ -249,6 +249,43 @@ export default function SystemsPage() {
             </div>
 
           </div>
+
+          {/* ── Recommended Tools ─────────────────────────────────────────────── */}
+          <div className="mt-10 mb-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recommended Tools</p>
+            <h2 className="text-xl font-semibold text-slate-800 mt-1">Optional but highly recommended</h2>
+            <p className="text-sm text-slate-600 mt-0.5">Tools that make everything else easier.</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+
+            {/* ── Canva Pro ─────────────────────────────────────────────────── */}
+            <div className="bg-white border border-[#B2DFDB] rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-semibold text-sm text-[#0D5C63]">Canva Pro</span>
+                <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                  <TypeBadge type="both" />
+                  <span className="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded-full shrink-0">
+                    Optional
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Design listing flyers, social posts, business card mockups, open house invites, and client gifts — all without hiring a designer. Canva Pro unlocks premium templates, brand kit storage, and background remover.
+              </p>
+              <a
+                href="https://www.canva.com/pro/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-auto text-xs font-medium px-3 py-1.5 rounded-lg border border-[#0D5C63] text-[#0D5C63]
+                           hover:bg-[#0D5C63] hover:text-white transition-colors self-start"
+              >
+                Start your free trial
+              </a>
+            </div>
+
+          </div>
+
         </div>
       </main>
     </div>

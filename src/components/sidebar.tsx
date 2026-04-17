@@ -42,6 +42,9 @@ const realtorNav: NavItem[] = [
       { label: "Overview",      href: "/dashboard/setup" },
       { label: "Licensing",     href: "/dashboard/licensing" },
       { label: "Systems Setup", href: "/dashboard/systems" },
+      { label: "Signs & Swag",  href: "/dashboard/signs-swag" },
+      { label: "Email Setup",   href: "/dashboard/email-setup" },
+      { label: "REAL Links",    href: "/dashboard/real-links" },
       { label: "Notices",       href: "/dashboard/notices" },
     ],
   },
@@ -50,8 +53,8 @@ const realtorNav: NavItem[] = [
     href:  "/dashboard/roadmap",
     sub: [
       { label: "My Career Path",    href: "/dashboard/roadmap" },
-      { label: "Finding My Niche",  href: "/dashboard/niche" },
       { label: "Finding My System", href: "/dashboard/system" },
+      { label: "Finding My Niche",  href: "/dashboard/niche" },
     ],
   },
   {
@@ -60,7 +63,7 @@ const realtorNav: NavItem[] = [
     section: "MY COACHING",
     sub: [
       { label: "Overview", href: "/dashboard" },
-      { label: "My Week",  href: "/dashboard" },
+      { label: "My Week",  href: "/dashboard/week" },
     ],
   },
 ];
