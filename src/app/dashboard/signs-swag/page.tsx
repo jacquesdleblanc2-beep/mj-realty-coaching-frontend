@@ -55,7 +55,7 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
   return (
     <div className="bg-white border border-[#B2DFDB] rounded-xl p-4 mb-8">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-[#0D5C63]">{done} of {total} items ordered</span>
+        <span className="text-sm font-medium text-[#0D5C63]">{done} of {total} steps complete</span>
         <span className="text-sm font-bold text-[#0D5C63]">{pct}%</span>
       </div>
       <div className="w-full h-2 bg-[#B2DFDB] rounded-full overflow-hidden">
@@ -231,7 +231,7 @@ export default function SignsSwagPage() {
   const isCompleted    = completed.includes(KEY_COMPLETED);
   const guidelinesOk   = completed.includes(KEY_GUIDELINES);
   const bizCardsOk     = completed.includes(KEY_BIZ_CARDS);
-  const orderedCount   = MATERIAL_KEYS.filter((k) => completed.includes(k)).length;
+  const completedCount = [...MATERIAL_KEYS, KEY_GUIDELINES].filter((k) => completed.includes(k)).length;
   const otherOrdered   = MATERIAL_KEYS.filter((k) => k !== KEY_BIZ_CARDS && completed.includes(k)).length;
   const canComplete    = bizCardsOk && otherOrdered >= 1 && guidelinesOk && !isCompleted;
 
@@ -321,7 +321,7 @@ export default function SignsSwagPage() {
           </p>
         </div>
 
-        <ProgressBar done={orderedCount} total={MATERIAL_KEYS.length} />
+        <ProgressBar done={completedCount} total={6} />
 
         {/* ── Brand Hub Cards ───────────────────────────────────────────────── */}
         <div className="mb-4">
@@ -451,7 +451,7 @@ export default function SignsSwagPage() {
         >
           <h2 className="text-xl font-semibold text-slate-800 mb-2">Mark Signs &amp; Swag complete</h2>
           <p className="text-sm text-slate-500 mb-5">
-            You&apos;ve ordered <strong>{orderedCount} of {MATERIAL_KEYS.length}</strong> materials.
+            <strong>{completedCount} of 6</strong> steps complete.
             {" "}Brand guidelines reviewed: <strong>{guidelinesOk ? "Yes" : "Not yet"}</strong>.
           </p>
 

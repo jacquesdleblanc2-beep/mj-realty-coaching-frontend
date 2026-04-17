@@ -451,17 +451,17 @@ export default function SetupPage() {
             <p className="text-xs font-semibold text-[#0D5C63]/60 uppercase tracking-widest mb-1">
               My Coaching
             </p>
-            <h3 className="text-base font-semibold text-slate-800 mb-1">Ready to plan your week?</h3>
+            <h3 className="text-base font-semibold text-slate-800 mb-1">Your career path is waiting.</h3>
             <p className="text-sm text-slate-500">
-              Head to My Week to see your tasks and track your daily actions.
+              Once you&apos;re set up, My Career Path takes you through Year 1 to Year 5+ as a Creativ agent.
             </p>
           </div>
           <Link
-            href="/dashboard/week"
+            href="/dashboard/roadmap"
             className="shrink-0 inline-flex items-center gap-2 bg-[#0D5C63] hover:bg-[#0A4A50]
                        text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
           >
-            My Week
+            Preview My Career Path
             <ArrowRight size={14} />
           </Link>
         </div>
