@@ -396,28 +396,34 @@ export default function SetupPage() {
         </div>
 
         {/* ── 3. UP NEXT card ───────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#FF6B35] to-[#C94A1A] p-6 mb-8 shadow-lg">
-          {/* Decorative ring */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#FF6B35] to-[#C94A1A] p-4 md:p-5 mb-8 shadow-lg">
+          {/* Decorative rings */}
           <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
           <div className="absolute -bottom-10 -right-4 w-28 h-28 rounded-full bg-white/5" />
 
-          <p className="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] mb-2 relative">
-            Up Next
-          </p>
-          <h2 className="text-xl font-bold text-white mb-1.5 relative leading-snug">
-            {nextStep.heading}
-          </h2>
-          <p className="text-sm text-white/80 mb-5 relative max-w-xl leading-relaxed">
-            {nextStep.description}
-          </p>
-          <Link
-            href={nextStep.href}
-            className="relative inline-flex items-center gap-2 bg-white text-[#C94A1A] text-sm font-semibold
-                       px-5 py-2.5 rounded-xl shadow-sm hover:bg-orange-50 transition-colors"
-          >
-            {nextStep.cta}
-            <ArrowRight size={15} />
-          </Link>
+          <div className="relative flex flex-col md:flex-row md:items-center md:gap-6">
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] mb-1">
+                Up Next
+              </p>
+              <h2 className="text-lg font-bold text-white mb-1 leading-snug">
+                {nextStep.heading}
+              </h2>
+              <p className="text-sm text-white/80 leading-snug max-w-xl">
+                {nextStep.description}
+              </p>
+            </div>
+            <div className="mt-3 md:mt-0 shrink-0">
+              <Link
+                href={nextStep.href}
+                className="inline-flex items-center gap-2 bg-white text-[#C94A1A] text-sm font-semibold
+                           px-5 py-2.5 rounded-xl shadow-sm hover:bg-orange-50 transition-colors"
+              >
+                {nextStep.cta}
+                <ArrowRight size={15} />
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* ── 4. Section header ─────────────────────────────────────────────── */}
