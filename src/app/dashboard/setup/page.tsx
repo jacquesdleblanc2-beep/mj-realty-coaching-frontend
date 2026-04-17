@@ -14,9 +14,9 @@ import {
   Link2,
   Bell,
   Target,
-  ChevronRight,
   ArrowRight,
   Sparkles,
+  Check,
 } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { getRealtorByEmail, getNotices, Realtor } from "@/lib/api";
@@ -51,16 +51,21 @@ const SWAG_KEYS = [
   "swag_brand_guidelines_reviewed",
 ];
 
+const RING_R          = 32;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R; // ≈ 201.06
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type RealtorWithNotices = Realtor & { read_notices?: string[] };
 
 interface TileData {
-  icon:    React.ReactNode;
-  title:   string;
-  pct:     number;
-  href:    string;
-  label:   string;
+  icon:     React.ReactNode;
+  title:    string;
+  pct:      number;
+  href:     string;
+  label:    string;
+  accent:   string;
+  subtitle: string;
 }
 
 interface NextStep {
@@ -163,29 +168,7 @@ function getNextStep(
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function ThinBar({
-  pct,
-  trackColor,
-  fillColor,
-}: {
-  pct: number;
-  trackColor: string;
-  fillColor: string;
-}) {
-  return (
-    <div
-      className="w-full h-1.5 rounded-full overflow-hidden"
-      style={{ backgroundColor: trackColor }}
-    >
-      <div
-        className="h-full rounded-full transition-all duration-500"
-        style={{ width: `${pct}%`, backgroundColor: fillColor }}
-      />
-    </div>
-  );
-}
-
-function AnimatedOverallBar({ pct }: { pct: number }) {
+function ProgressRing({ pct }: { pct: number }) {
   const [displayed, setDisplayed] = useState(0);
 
   useEffect(() => {
@@ -193,78 +176,109 @@ function AnimatedOverallBar({ pct }: { pct: number }) {
     return () => clearTimeout(t);
   }, [pct]);
 
+  const filled = (displayed / 100) * RING_CIRCUMFERENCE;
+
   return (
-    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-      <div
-        className="h-full rounded-full transition-all duration-700"
-        style={{
-          width: `${displayed}%`,
-          background: "linear-gradient(to right, #0D5C63, #14808A)",
-        }}
-      />
+    <div className="relative w-20 h-20 shrink-0">
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        {/* Track */}
+        <circle
+          cx="40" cy="40" r={RING_R}
+          fill="none"
+          stroke="#E2E8F0"
+          strokeWidth="8"
+        />
+        {/* Fill */}
+        <circle
+          cx="40" cy="40" r={RING_R}
+          fill="none"
+          stroke="#0D5C63"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={`${filled} ${RING_CIRCUMFERENCE}`}
+          transform="rotate(-90 40 40)"
+          style={{ transition: "stroke-dasharray 0.7s ease" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-xl font-bold text-[#0D5C63] tabular-nums leading-none">{pct}%</span>
+        <span className="text-[10px] text-slate-500 mt-0.5">overall</span>
+      </div>
     </div>
   );
 }
 
-function Tile({ icon, title, pct, href, label }: TileData) {
+function Tile({ icon, title, pct, href, accent, subtitle }: TileData) {
   const done       = pct === 100;
   const inProgress = pct > 0 && pct < 100;
 
-  const containerClass = done
-    ? "bg-[#ECFDF5] border border-[#A7F3D0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+  // Icon container background
+  const iconBgStyle = done
+    ? { backgroundColor: "#10B981" }
     : inProgress
-    ? "bg-[#E0F2F1] border border-[#B2DFDB] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
-    : "bg-white border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-[#B2DFDB] transition-all duration-200";
+    ? { backgroundColor: accent }
+    : { backgroundColor: accent + "1A" }; // 10% opacity
 
-  const iconBg    = done ? "bg-[#059669]" : inProgress ? "bg-[#0D5C63]" : "bg-[#F0FAFA]";
-  const iconColor = done || inProgress ? "text-white" : "text-[#0D5C63]";
-
-  const pctClass  = done
-    ? "text-xl font-bold tabular-nums text-[#059669]"
-    : inProgress
-    ? "text-xl font-bold tabular-nums text-[#0D5C63]"
-    : "text-xl font-bold tabular-nums text-slate-400";
-
-  const trackColor = done ? "#A7F3D0" : inProgress ? "#B2DFDB" : "#F1F5F9";
-  const fillColor  = done ? "#059669" : inProgress ? "#0D5C63" : "#CBD5E1";
+  const iconContent = done
+    ? <Check size={18} className="text-white" />
+    : <span style={{ color: done || inProgress ? "#fff" : accent }}>{icon}</span>;
 
   return (
     <Link
       href={href}
-      className={`group relative rounded-2xl p-5 flex flex-col gap-3 ${containerClass}`}
+      className="group relative rounded-xl border border-slate-200 bg-white p-4
+                 flex flex-col hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
     >
-      {/* Completed badge */}
-      {done && (
-        <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#059669]/20 flex items-center justify-center">
-          <svg className="w-2.5 h-2.5 text-[#059669]" viewBox="0 0 10 8" fill="none">
-            <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.8"
-                  strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </span>
-      )}
+      {/* Top row: icon + percentage/badge */}
+      <div className="flex items-start justify-between">
+        {/* Icon container */}
+        <div
+          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+          style={iconBgStyle}
+        >
+          {iconContent}
+        </div>
 
-      {/* Icon */}
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
-        <span className={iconColor}>{icon}</span>
+        {/* Percentage / badge */}
+        {done ? (
+          <span
+            className="w-5 h-5 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: "#10B981" }}
+          >
+            <Check size={11} className="text-white" />
+          </span>
+        ) : inProgress ? (
+          <span
+            className="text-sm font-bold tabular-nums"
+            style={{ color: accent }}
+          >
+            {pct}%
+          </span>
+        ) : (
+          <span className="text-xs font-semibold text-slate-400">Not started</span>
+        )}
       </div>
-
-      {/* Percentage */}
-      <span className={pctClass}>{pct}%</span>
 
       {/* Title + subtitle */}
-      <div>
-        <p className="text-base font-semibold text-[#0F172A] leading-tight">{title}</p>
-        <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+      <div className="mt-3">
+        <p className="text-sm font-semibold text-[#0F172A] leading-tight">{title}</p>
+        <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
       </div>
 
-      {/* Progress bar */}
-      <ThinBar pct={pct} trackColor={trackColor} fillColor={fillColor} />
-
-      {/* Arrow on hover */}
-      <ChevronRight
-        size={14}
-        className="absolute bottom-4 right-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
-      />
+      {/* Progress bar — only if pct > 0 */}
+      {pct > 0 && (
+        <div className="mt-auto pt-3">
+          <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${pct}%`,
+                backgroundColor: done ? "#10B981" : accent,
+              }}
+            />
+          </div>
+        </div>
+      )}
     </Link>
   );
 }
@@ -351,60 +365,100 @@ export default function SetupPage() {
     (licensingPct + syssetupPct + emailPct + swagPct + realLinksPct + noticesPct + first90Pct) / 7
   );
 
+  // Completed areas count (for hero sub-line)
+  const completedAreas = [
+    licensingPct === 100,
+    syssetupPct === 100,
+    emailPct === 100,
+    swagPct === 100,
+    realLinksPct === 100,
+    totalNotices > 0 && noticesPct === 100,
+    first90Pct === 100,
+  ].filter(Boolean).length;
+
   const firstName = (session?.user?.name ?? "").split(" ")[0];
   const nextStep  = getNextStep(
     licensingPct, syssetupPct, emailPct, swagPct, realLinksPct, unreadCount, first90Pct
   );
 
+  // Dynamic welcome context
+  const welcomeContext =
+    overallPct === 0   ? "Let's get started." :
+    overallPct <= 30   ? "Good momentum."       :
+    overallPct <= 70   ? "Making real progress." :
+    overallPct < 100   ? "Almost there."         :
+                         "You're all set.";
+
+  // Dynamic hero h1 text
+  const heroStatement =
+    overallPct === 0   ? "Ready to get started?" :
+    overallPct <= 50   ? `You're ${overallPct}% of the way to your first deal.` :
+    overallPct < 100   ? `You're ${overallPct}% there. Keep the momentum.` :
+                         "You're fully set up.";
+
   const tiles: TileData[] = [
     {
-      icon:  <FileCheck size={20} />,
-      title: "Licensing",
-      pct:   licensingPct,
-      href:  "/dashboard/licensing",
-      label: `${licensingDone} of ${licensingTotal} steps`,
+      icon:     <FileCheck size={18} />,
+      title:    "Licensing",
+      pct:      licensingPct,
+      href:     "/dashboard/licensing",
+      label:    `${licensingDone} of ${licensingTotal} steps`,
+      accent:   "#3B82F6",
+      subtitle: "New licence or transfer",
     },
     {
-      icon:  <LayoutGrid size={20} />,
-      title: "Systems Setup",
-      pct:   syssetupPct,
-      href:  "/dashboard/systems",
-      label: `${syssetupDone} of ${SYSSETUP_TOTAL} platforms`,
+      icon:     <LayoutGrid size={18} />,
+      title:    "Systems Setup",
+      pct:      syssetupPct,
+      href:     "/dashboard/systems",
+      label:    `${syssetupDone} of ${SYSSETUP_TOTAL} platforms`,
+      accent:   "#8B5CF6",
+      subtitle: "6 core platforms",
     },
     {
-      icon:  <Mail size={20} />,
-      title: "Email Setup",
-      pct:   emailPct,
-      href:  "/dashboard/email-setup",
-      label: emailPct === 100 ? "Complete" : emailPct > 0 ? "In progress" : "Not started",
+      icon:     <Tag size={18} />,
+      title:    "Signs & Swag",
+      pct:      swagPct,
+      href:     "/dashboard/signs-swag",
+      label:    swagPct === 100 ? "Complete" : `${Math.round((swagPct / 100) * SWAG_KEYS.length)} of ${SWAG_KEYS.length} items`,
+      accent:   "#F97316",
+      subtitle: "Cards, signs, branding",
     },
     {
-      icon:  <Tag size={20} />,
-      title: "Signs & Swag",
-      pct:   swagPct,
-      href:  "/dashboard/signs-swag",
-      label: swagPct === 100 ? "Complete" : `${Math.round((swagPct / 100) * SWAG_KEYS.length)} of ${SWAG_KEYS.length} items`,
+      icon:     <Mail size={18} />,
+      title:    "Email Setup",
+      pct:      emailPct,
+      href:     "/dashboard/email-setup",
+      label:    emailPct === 100 ? "Complete" : emailPct > 0 ? "In progress" : "Not started",
+      accent:   "#6366F1",
+      subtitle: "Personal or business",
     },
     {
-      icon:  <Link2 size={20} />,
-      title: "REAL Links",
-      pct:   realLinksPct,
-      href:  "/dashboard/real-links",
-      label: realLinksPct === 100 ? "Complete" : realLinksPct === 50 ? "Bookmarked" : "Not started",
+      icon:     <Link2 size={18} />,
+      title:    "REAL Links",
+      pct:      realLinksPct,
+      href:     "/dashboard/real-links",
+      label:    realLinksPct === 100 ? "Complete" : realLinksPct === 50 ? "Bookmarked" : "Not started",
+      accent:   "#14B8A6",
+      subtitle: "Real Brokerage directory",
     },
     {
-      icon:  <Bell size={20} />,
-      title: "Notices",
-      pct:   noticesPct,
-      href:  "/dashboard/notices",
-      label: totalNotices === 0 ? "No notices yet" : `${noticesDone} of ${totalNotices} read`,
+      icon:     <Bell size={18} />,
+      title:    "Notices",
+      pct:      noticesPct,
+      href:     "/dashboard/notices",
+      label:    totalNotices === 0 ? "No notices yet" : `${noticesDone} of ${totalNotices} read`,
+      accent:   "#F59E0B",
+      subtitle: "Team updates",
     },
     {
-      icon:  <Target size={20} />,
-      title: "First 90 Days",
-      pct:   first90Pct,
-      href:  "/dashboard/roadmap",
-      label: `${first90Done} of ${first90Total} milestones`,
+      icon:     <Target size={18} />,
+      title:    "First 90 Days",
+      pct:      first90Pct,
+      href:     "/dashboard/roadmap",
+      label:    `${first90Done} of ${first90Total} milestones`,
+      accent:   "#10B981",
+      subtitle: "Your ramp-up plan",
     },
   ];
 
@@ -412,97 +466,100 @@ export default function SetupPage() {
     <div className="flex min-h-screen bg-[#FAF8F3]">
       <Sidebar role="realtor" />
 
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 px-8 pt-8 pb-12 overflow-auto">
 
-        {/* ── 1. Hero greeting ──────────────────────────────────────────────── */}
-        <div className="flex items-end justify-between gap-4 bg-gradient-to-br from-[#F0FAFA] via-[#FAF8F3] to-[#FFF8F0] rounded-2xl p-6 mb-1">
-          <div>
-            <p className="text-xs font-semibold text-[#0D5C63]/60 uppercase tracking-widest mb-1">
-              Initial Setup
-            </p>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0F172A] leading-tight">
-              {firstName ? `Welcome, ${firstName}.` : "Welcome."}
-            </h1>
-            <p className="text-base text-slate-600 mt-2">
-              Your onboarding dashboard — track every step before your first deal.
-            </p>
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-3xl font-bold text-[#0D5C63] tabular-nums leading-none">{overallPct}%</p>
-            <p className="text-xs text-slate-500 mt-0.5">overall</p>
-          </div>
+        {/* ── 1. Compact welcome bar ────────────────────────────────────────── */}
+        <div className="pb-4">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">
+            Initial Setup
+          </p>
+          <p className="text-xl font-semibold text-[#0F172A]">
+            {firstName ? `Hey, ${firstName}.` : "Hey."}{" "}
+            <span className="font-normal text-slate-500">{welcomeContext}</span>
+          </p>
         </div>
 
-        {/* ── 2. Overall progress bar ───────────────────────────────────────── */}
-        <div className="mt-3 mb-8">
-          <AnimatedOverallBar pct={overallPct} />
-        </div>
+        {/* ── 2. Progress hero card ─────────────────────────────────────────── */}
+        <div className="mt-4 bg-gradient-to-br from-white via-white to-[#F0FAFA]
+                        border border-[#E2E8F0] rounded-2xl shadow-sm p-6 md:p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
-        {/* ── 3. UP NEXT card ───────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#FF6B35] via-[#FF7F50] to-[#FF8956] p-4 md:p-5 mb-8 shadow-lg shadow-orange-500/20">
-          {/* Decorative circles */}
-          <div className="absolute -top-12 -right-12 w-52 h-52 rounded-full bg-white/10" />
-          <div className="absolute -bottom-10 -left-6 w-40 h-40 rounded-full bg-white/5" />
-
-          <div className="relative flex flex-col md:flex-row md:items-center md:gap-6">
+            {/* Left */}
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] mb-1">
-                Up Next
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
+                Your Onboarding
               </p>
-              <h2 className="text-lg font-bold text-white mb-1 leading-snug">
-                {nextStep.heading}
-              </h2>
-              <p className="text-sm text-white/80 leading-snug max-w-xl">
-                {nextStep.description}
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#0F172A] mt-2 leading-snug">
+                {heroStatement}
+              </h1>
+              <p className="text-sm text-slate-600 mt-2">
+                {completedAreas} of 7 areas complete · {7 - completedAreas} to go
               </p>
             </div>
-            <div className="mt-3 md:mt-0 shrink-0">
+
+            {/* Right — circular progress ring */}
+            <ProgressRing pct={overallPct} />
+
+          </div>
+        </div>
+
+        {/* ── 3. Up Next card ───────────────────────────────────────────────── */}
+        <div className="mt-4 bg-white border-l-4 border-l-[#FF6B35]
+                        border border-slate-200 rounded-xl shadow-sm p-4 md:p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold tracking-wider text-[#FF6B35] uppercase">
+                Up Next
+              </p>
+              <p className="text-base md:text-lg font-semibold text-[#0F172A] mt-0.5 truncate">
+                {nextStep.heading}
+              </p>
+            </div>
+            <div className="shrink-0">
               <Link
                 href={nextStep.href}
-                className="inline-flex items-center bg-white text-[#FF6B35] text-sm font-semibold
-                           px-5 py-2.5 rounded-xl shadow-sm hover:bg-orange-50 transition-colors"
+                className="inline-flex items-center gap-1.5 bg-[#FF6B35] hover:bg-[#E85A24]
+                           text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors"
               >
                 {nextStep.cta}
-                <ArrowRight size={18} className="ml-2" />
+                <ArrowRight size={16} />
               </Link>
             </div>
           </div>
         </div>
 
-        {/* ── 4. Section header ─────────────────────────────────────────────── */}
-        <div className="mb-4">
-          <p className="text-xs tracking-widest text-slate-500 font-semibold uppercase">Your Onboarding</p>
-          <h2 className="text-2xl font-bold text-[#0F172A] mt-1">Jump to any area</h2>
-          <p className="text-sm text-slate-500 mt-1">Track your progress across every step</p>
-        </div>
+        {/* ── 4. Tile grid ──────────────────────────────────────────────────── */}
+        <div className="mt-8">
+          <p className="text-xs tracking-widest text-slate-500 font-semibold uppercase mb-4">
+            Your Areas
+          </p>
 
-        {/* ── 5. 7-tile grid + ghost 8th ────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
 
-          {tiles.map((tile) => (
-            <Tile key={tile.title} {...tile} />
-          ))}
+            {tiles.map((tile) => (
+              <Tile key={tile.title} {...tile} />
+            ))}
 
-          {/* Ghost 8th tile */}
-          <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-[#FAF8F3]/50
-                          p-5 flex flex-col items-start gap-2 cursor-default opacity-60">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center">
-              <Sparkles size={16} className="text-slate-300" />
+            {/* Ghost 8th tile — hidden on mobile */}
+            <div className="hidden md:flex rounded-xl border border-dashed border-slate-200
+                            bg-transparent p-4 flex-col items-center justify-center
+                            cursor-default opacity-60 min-h-[110px]">
+              <Sparkles size={16} className="text-slate-300 mb-2" />
+              <p className="text-xs text-slate-400 italic text-center">More coming soon</p>
             </div>
-            <p className="text-sm font-semibold text-slate-300 mt-1">More coming</p>
-            <p className="text-[11px] text-slate-400 italic">Additional modules on the way</p>
-          </div>
 
+          </div>
         </div>
 
-        {/* ── 6. Career path card ───────────────────────────────────────────── */}
-        <div className="mt-12 bg-gradient-to-br from-[#FAF8F3] to-[#F0FAFA] border border-[#B2DFDB]
-                        rounded-2xl p-6 shadow-sm flex items-center justify-between gap-6">
+        {/* ── 5. Career path card ───────────────────────────────────────────── */}
+        <div className="mt-12 bg-gradient-to-br from-[#FAF8F3] to-[#F0FAFA]
+                        border border-[#B2DFDB] rounded-2xl p-6
+                        flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
-            <p className="text-xs font-semibold text-[#0D5C63] uppercase tracking-widest mb-1">
+            <p className="text-xs font-semibold text-[#0D5C63] uppercase tracking-widest">
               My Coaching
             </p>
-            <h3 className="text-xl font-bold text-[#0F172A] mt-1">Your career path is waiting.</h3>
+            <h2 className="text-lg font-bold text-[#0F172A] mt-1">Your career path is waiting.</h2>
             <p className="text-sm text-slate-600 mt-1">
               Once you&apos;re set up, My Career Path takes you through Year 1 to Year 5+ as a Creativ agent.
             </p>
@@ -513,7 +570,7 @@ export default function SetupPage() {
                        text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
           >
             Preview My Career Path
-            <ArrowRight size={18} />
+            <ArrowRight size={16} />
           </Link>
         </div>
 
