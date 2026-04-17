@@ -77,7 +77,7 @@ interface VendorLink {
 interface MaterialCardProps {
   icon:      React.ReactNode;
   title:     string;
-  priority:  "ESSENTIAL" | "RECOMMENDED";
+  priority:  "ESSENTIAL" | "RECOMMENDED" | "OPTIONAL";
   desc:      string;
   vendors:   VendorLink[];
   itemKey:   string;
@@ -105,7 +105,9 @@ function MaterialCard({
           className={`text-[10px] font-bold px-2 py-1 rounded-full shrink-0 tracking-wide
                       ${priority === "ESSENTIAL"
                         ? "bg-[#FF6B35] text-white"
-                        : "bg-slate-100 text-slate-600"}`}
+                        : priority === "RECOMMENDED"
+                        ? "bg-slate-100 text-slate-600"
+                        : "bg-slate-50 text-slate-400"}`}
         >
           {priority}
         </span>
@@ -262,7 +264,7 @@ export default function SignsSwagPage() {
       icon:     <Home className="w-5 h-5 text-[#0D5C63]" />,
       title:    "Listing Signs",
       priority: "ESSENTIAL",
-      desc:     "The 18\" × 24\" sign that goes in every seller's front yard. Most new realtors order 5–10 to start. You'll also need stakes or frames — usually easier to get from a local sign shop.",
+      desc:     "The 24\" × 32\" sign that goes in every seller's front yard. Most new realtors order 6–12 to start. You'll also need stakes or frames — usually easier to get from a local sign shop.",
       vendors:  [
         { label: "Local sign shops",   note: "recommended for stakes and installation" },
         { label: "Vistaprint Canada",  href: "https://www.vistaprint.com/signs-posters/real-estate-signage", note: "national option, ship-to-door" },
@@ -283,7 +285,7 @@ export default function SignsSwagPage() {
     {
       icon:     <IdCard className="w-5 h-5 text-[#0D5C63]" />,
       title:    "Name Badge",
-      priority: "RECOMMENDED",
+      priority: "OPTIONAL",
       desc:     "For open houses, networking events, and office meet-and-greets. Magnetic backs are worth the small upgrade — your blazer will thank you.",
       vendors:  [
         { label: "Vistaprint Canada",           href: "https://www.vistaprint.ca/promotional-products/name-badges" },
@@ -434,18 +436,8 @@ export default function SignsSwagPage() {
                 Planning to design something yourself instead of using the Real templates? Real Brokerage has specific rules about logo usage, color, fonts, required disclosures, and what needs pre-approval before printing.
               </p>
               <p className="text-sm text-slate-500 italic mt-2 leading-relaxed">
-                Detailed DIY guidelines coming soon — Jacques will add these directly from the Real brand team. For now, the Brand Guidelines link above is the source of truth.
+                Detailed DIY guidelines coming soon — Jacques will add these directly from the Real brand team. For now, use the Brand Guidelines link above as your source of truth.
               </p>
-              <a
-                href={BRAND_GUIDELINES_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 mt-4 text-sm font-medium px-4 py-2 rounded-lg
-                           border border-[#0D5C63] text-[#0D5C63] hover:bg-[#F0FAFA] transition-colors"
-              >
-                Open Brand Guidelines
-                <ExternalLink size={14} />
-              </a>
             </div>
           </div>
         </div>
