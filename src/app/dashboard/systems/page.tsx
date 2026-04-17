@@ -175,7 +175,7 @@ export default function SystemsPage() {
       <Sidebar role="realtor" />
 
       <main className="flex-1 p-8 overflow-auto">
-        <div className="max-w-3xl">
+        <div>
 
           <div className="mb-6">
             <h1 className="text-2xl font-semibold text-slate-900">Systems Setup</h1>
@@ -185,7 +185,7 @@ export default function SystemsPage() {
           <ProgressBar done={doneCount} total={TOTAL} />
 
           <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Platforms</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
             {/* ── Active platform cards ─────────────────────────────────────── */}
             {PLATFORMS.map((p) => {
@@ -257,7 +257,7 @@ export default function SystemsPage() {
             <p className="text-sm text-slate-600 mt-0.5">Tools that make everything else easier.</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
             {/* ── Canva Pro ─────────────────────────────────────────────────── */}
             <div className="bg-white border border-[#B2DFDB] rounded-xl p-4 flex flex-col gap-2 shadow-sm">
