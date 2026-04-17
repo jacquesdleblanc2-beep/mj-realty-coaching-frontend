@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Monitor, Smartphone } from "lucide-react";
+import { Monitor, Smartphone, Check } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { getRealtorByEmail, patchRoadmapItem, Realtor } from "@/lib/api";
 
@@ -77,6 +77,8 @@ const PLATFORMS: Platform[] = [
 
 const TOTAL = PLATFORMS.length; // 6 active platforms (Rezen and Canva excluded from count)
 
+const VIOLET = "#8B5CF6";
+
 // ── Platform type badge ────────────────────────────────────────────────────────
 
 function TypeBadge({ type }: { type: PlatformType }) {
@@ -97,20 +99,23 @@ function TypeBadge({ type }: { type: PlatformType }) {
   );
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// ── Progress card ──────────────────────────────────────────────────────────────
 
-function ProgressBar({ done, total }: { done: number; total: number }) {
+function ProgressCard({ done, total }: { done: number; total: number }) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   return (
-    <div className="bg-white border border-[#B2DFDB] rounded-xl p-4 mb-6">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-[#0D5C63]">{done} of {total} items completed</span>
-        <span className="text-sm font-semibold text-[#0D5C63]">{pct}%</span>
+    <div
+      className="shadow-soft-lg rounded-xl p-6 mb-6"
+      style={{ backgroundColor: "#8B5CF61A", border: "1px solid #8B5CF622" }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-[#334155]">{done} of {total} platforms set up</span>
+        <span className="text-sm font-bold tabular-nums" style={{ color: VIOLET }}>{pct}%</span>
       </div>
-      <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-white/60 rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#0D5C63] rounded-full transition-all duration-300"
-          style={{ width: `${pct}%` }}
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${pct}%`, backgroundColor: VIOLET }}
         />
       </div>
     </div>
@@ -162,7 +167,7 @@ export default function SystemsPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-[#F0FAFA] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAF8F3] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
       </div>
     );
@@ -171,122 +176,148 @@ export default function SystemsPage() {
   const doneCount = PLATFORMS.filter((p) => completed.has(p.key)).length;
 
   return (
-    <div className="flex min-h-screen bg-[#F0FAFA]">
+    <div className="flex min-h-screen bg-[#FAF8F3]">
       <Sidebar role="realtor" />
 
-      <main className="flex-1 p-8 overflow-auto">
-        <div>
+      <main className="flex-1 px-8 pt-8 pb-12 overflow-auto">
 
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-slate-900">Systems Setup</h1>
-            <p className="text-sm text-[#0A4A50] mt-1">Get connected to every tool you&apos;ll use as a Creativ Realty agent.</p>
-          </div>
+        {/* ── Page header — no card treatment ──────────────────────────────── */}
+        <div className="pb-4 mb-2">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">
+            Initial Setup
+          </p>
+          <h1 className="text-xl font-semibold text-[#0F172A]">Systems Setup</h1>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Get connected to every tool you&apos;ll use as a Creativ Realty agent.
+          </p>
+        </div>
 
-          <ProgressBar done={doneCount} total={TOTAL} />
+        {/* ── Progress card ─────────────────────────────────────────────────── */}
+        <ProgressCard done={doneCount} total={TOTAL} />
 
-          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Platforms</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* ── Platforms section label ───────────────────────────────────────── */}
+        <p className="text-xs tracking-widest text-slate-500 font-semibold uppercase mb-4">
+          Platforms
+        </p>
 
-            {/* ── Active platform cards ─────────────────────────────────────── */}
-            {PLATFORMS.map((p) => {
-              const done = completed.has(p.key);
-              return (
-                <div
-                  key={p.key}
-                  className={`bg-white border rounded-xl p-4 flex flex-col gap-2 transition-colors
-                              ${done ? "border-[#0D5C63] bg-teal-50/40" : "border-[#B2DFDB]"}`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-semibold text-sm text-[#0D5C63]">{p.name}</span>
-                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                      <TypeBadge type={p.type} />
-                      {done && (
-                        <span className="w-5 h-5 rounded-full bg-[#0D5C63] flex items-center justify-center shrink-0">
-                          <svg className="w-3 h-3 text-white" viewBox="0 0 12 10" fill="none">
-                            <path d="M1 5l3.5 3.5L11 1" stroke="currentColor" strokeWidth="2"
-                                  strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">{p.description}</p>
-                  {p.note && (
-                    <p className="text-xs text-slate-500 italic">{p.note}</p>
-                  )}
-                  <a
-                    href={p.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-[#0D5C63] font-medium hover:underline"
-                  >
-                    → {p.url}
-                  </a>
-                  <button
-                    onClick={() => toggle(p.key, !done)}
-                    className={`mt-auto text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors self-start
-                                ${done
-                                  ? "border-teal-200 text-teal-400 hover:bg-red-50 hover:border-red-200 hover:text-red-500"
-                                  : "border-[#0D5C63] text-[#0D5C63] hover:bg-[#0D5C63] hover:text-white"}`}
-                  >
-                    {done ? "✓ Set up" : "Mark as set up"}
-                  </button>
-                </div>
-              );
-            })}
+        {/* ── Platform cards grid ───────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-            {/* ── Rezen — Coming Soon ───────────────────────────────────────── */}
-            <div className="bg-[#F0FAFA]/50 border-2 border-dashed border-[#B2DFDB] rounded-xl p-4 flex flex-col gap-2 cursor-default">
-              <div className="flex items-start justify-between gap-2">
-                <span className="font-semibold text-sm text-[#0D5C63]">Rezen</span>
-                <span className="bg-[#0D5C63] text-white text-xs px-3 py-1 rounded-full font-semibold shrink-0">
-                  Coming Soon
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                The Real Brokerage&apos;s all-in-one transaction platform. Replaces Transaction Desk when Creativ Realty joins Real.
-              </p>
-            </div>
-
-          </div>
-
-          {/* ── Recommended Tools ─────────────────────────────────────────────── */}
-          <div className="mt-10 mb-4">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recommended Tools</p>
-            <h2 className="text-xl font-semibold text-slate-800 mt-1">Optional but highly recommended</h2>
-            <p className="text-sm text-slate-600 mt-0.5">Tools that make everything else easier.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-            {/* ── Canva Pro ─────────────────────────────────────────────────── */}
-            <div className="bg-white border border-[#B2DFDB] rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-              <div className="flex items-start justify-between gap-2">
-                <span className="font-semibold text-sm text-[#0D5C63]">Canva Pro</span>
-                <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                  <TypeBadge type="both" />
-                  <span className="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded-full shrink-0">
-                    Optional
-                  </span>
-                </div>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Design listing flyers, social posts, business card mockups, open house invites, and client gifts — all without hiring a designer. Canva Pro unlocks premium templates, brand kit storage, and background remover.
-              </p>
-              <a
-                href="https://www.canva.com/pro/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-auto text-xs font-medium px-3 py-1.5 rounded-lg border border-[#0D5C63] text-[#0D5C63]
-                           hover:bg-[#0D5C63] hover:text-white transition-colors self-start"
+          {PLATFORMS.map((p) => {
+            const done = completed.has(p.key);
+            return (
+              <div
+                key={p.key}
+                className="shadow-soft rounded-xl p-5 flex flex-col gap-3 transition-shadow hover:shadow-soft-hover"
+                style={
+                  done
+                    ? { backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0" }
+                    : { backgroundColor: "#8B5CF61A", border: "1px solid #8B5CF622" }
+                }
               >
-                Start your free trial
-              </a>
-            </div>
+                {/* Name row */}
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-semibold text-sm text-[#0F172A]">{p.name}</span>
+                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                    <TypeBadge type={p.type} />
+                    {done && (
+                      <span className="w-5 h-5 rounded-full bg-[#10B981] flex items-center justify-center shrink-0">
+                        <Check size={11} className="text-white" />
+                      </span>
+                    )}
+                  </div>
+                </div>
 
+                {/* Description */}
+                <p className="text-xs text-[#334155] leading-relaxed">{p.description}</p>
+
+                {/* Optional note */}
+                {p.note && (
+                  <p className="text-xs text-[#64748B] italic">{p.note}</p>
+                )}
+
+                {/* Link */}
+                <a
+                  href={p.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium hover:underline"
+                  style={{ color: VIOLET }}
+                >
+                  → {p.url}
+                </a>
+
+                {/* Toggle button */}
+                <button
+                  onClick={() => toggle(p.key, !done)}
+                  className={`mt-auto text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors self-start
+                              ${done
+                                ? "border-teal-200 text-teal-400 hover:bg-red-50 hover:border-red-200 hover:text-red-500"
+                                : "border-[#0D5C63] text-[#0D5C63] hover:bg-[#0D5C63] hover:text-white"}`}
+                >
+                  {done ? "✓ Set up" : "Mark as set up"}
+                </button>
+              </div>
+            );
+          })}
+
+          {/* ── Rezen — Coming Soon ───────────────────────────────────────────── */}
+          <div
+            className="shadow-none rounded-xl p-5 flex flex-col gap-3 cursor-default"
+            style={{ backgroundColor: "#F0FAFA", border: "1px dashed #B2DFDB" }}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <span className="font-semibold text-sm text-[#0F172A]">Rezen</span>
+              <span className="bg-[#0D5C63]/10 text-[#0D5C63] text-xs px-2.5 py-0.5 rounded-full font-semibold shrink-0">
+                Coming Soon
+              </span>
+            </div>
+            <p className="text-xs text-[#334155] leading-relaxed">
+              The Real Brokerage&apos;s all-in-one transaction platform. Replaces Transaction Desk when Creativ Realty joins Real.
+            </p>
           </div>
 
         </div>
+
+        {/* ── Recommended Tools ─────────────────────────────────────────────── */}
+        <div className="mt-10 mb-4">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Recommended Tools</p>
+          <h2 className="text-xl font-semibold text-[#0F172A] mt-1">Optional but highly recommended</h2>
+          <p className="text-sm text-slate-500 mt-0.5">Tools that make everything else easier.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          {/* ── Canva Pro ─────────────────────────────────────────────────────── */}
+          <div
+            className="shadow-soft rounded-xl p-5 flex flex-col gap-3"
+            style={{ backgroundColor: "#FAFAF7", border: "1px solid #E7E5DE" }}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <span className="font-semibold text-sm text-[#0F172A]">Canva Pro</span>
+              <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                <TypeBadge type="both" />
+                <span className="bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full shrink-0">
+                  Optional
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-[#334155] leading-relaxed">
+              Design listing flyers, social posts, business card mockups, open house invites, and client gifts — all without hiring a designer. Canva Pro unlocks premium templates, brand kit storage, and background remover.
+            </p>
+            <a
+              href="https://www.canva.com/pro/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-auto text-xs font-medium px-3 py-1.5 rounded-lg border border-[#0D5C63] text-[#0D5C63]
+                         hover:bg-[#0D5C63] hover:text-white transition-colors self-start"
+            >
+              Start your free trial
+            </a>
+          </div>
+
+        </div>
+
       </main>
     </div>
   );
