@@ -223,11 +223,15 @@ function Tile({ icon, title, pct, href, accent, subtitle }: TileData) {
     ? <Check size={18} className="text-white" />
     : <span style={{ color: done || inProgress ? "#fff" : accent }}>{icon}</span>;
 
+  const cardStyle: React.CSSProperties = done
+    ? { backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0" }
+    : { backgroundColor: accent + "0A", border: "1px solid " + accent + "22" };
+
   return (
     <Link
       href={href}
-      className="group relative rounded-xl border border-slate-200 bg-white p-4
-                 flex flex-col hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+      className="group relative rounded-xl p-4 flex flex-col shadow-soft hover:shadow-soft-hover hover:-translate-y-0.5 transition-all duration-200"
+      style={cardStyle}
     >
       {/* Top row: icon + percentage/badge */}
       <div className="flex items-start justify-between">
@@ -480,8 +484,10 @@ export default function SetupPage() {
         </div>
 
         {/* ── 2. Progress hero card ─────────────────────────────────────────── */}
-        <div className="mt-4 bg-gradient-to-br from-white via-white to-[#F0FAFA]
-                        border border-[#E2E8F0] rounded-2xl shadow-sm p-6 md:p-8">
+        <div
+          className="mt-4 bg-gradient-to-br from-[#F0FAFA] via-[#F0FAFA] to-[#E8F4F8] rounded-2xl shadow-soft-lg p-6 md:p-8"
+          style={{ backgroundColor: "#F0FAFA", border: "1px solid #B2DFDB" }}
+        >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
             {/* Left */}
@@ -504,8 +510,15 @@ export default function SetupPage() {
         </div>
 
         {/* ── 3. Up Next card ───────────────────────────────────────────────── */}
-        <div className="mt-4 bg-white border-l-4 border-l-[#FF6B35]
-                        border border-slate-200 rounded-xl shadow-sm p-4 md:p-5">
+        <div
+          className="mt-4 border-l-4 border-l-[#FF6B35] rounded-xl shadow-soft p-4 md:p-5"
+          style={{
+            backgroundColor: "#FFF8F3",
+            borderTop: "1px solid #FFE4D1",
+            borderRight: "1px solid #FFE4D1",
+            borderBottom: "1px solid #FFE4D1",
+          }}
+        >
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold tracking-wider text-[#FF6B35] uppercase">
@@ -541,9 +554,10 @@ export default function SetupPage() {
             ))}
 
             {/* Ghost 8th tile — hidden on mobile */}
-            <div className="hidden md:flex rounded-xl border border-dashed border-slate-200
-                            bg-transparent p-4 flex-col items-center justify-center
-                            cursor-default opacity-60 min-h-[110px]">
+            <div
+              className="hidden md:flex rounded-xl shadow-none p-4 flex-col items-center justify-center cursor-default opacity-60 min-h-[110px]"
+              style={{ backgroundColor: "#FFFFFF80", border: "1px dashed #E2E8F0" }}
+            >
               <Sparkles size={16} className="text-slate-300 mb-2" />
               <p className="text-xs text-slate-400 italic text-center">More coming soon</p>
             </div>
@@ -552,9 +566,10 @@ export default function SetupPage() {
         </div>
 
         {/* ── 5. Career path card ───────────────────────────────────────────── */}
-        <div className="mt-12 bg-gradient-to-br from-[#FAF8F3] to-[#F0FAFA]
-                        border border-[#B2DFDB] rounded-2xl p-6
-                        flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div
+          className="mt-12 rounded-2xl shadow-soft p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6"
+          style={{ backgroundColor: "#FAFAF7", border: "1px solid #E7E5DE" }}
+        >
           <div>
             <p className="text-xs font-semibold text-[#0D5C63] uppercase tracking-widest">
               My Coaching
