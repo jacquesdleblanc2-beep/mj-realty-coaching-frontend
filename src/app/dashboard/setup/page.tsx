@@ -163,30 +163,80 @@ function getNextStep(
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function ThinBar({ pct, color = "#0D5C63" }: { pct: number; color?: string }) {
+function ThinBar({
+  pct,
+  trackColor,
+  fillColor,
+}: {
+  pct: number;
+  trackColor: string;
+  fillColor: string;
+}) {
   return (
-    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+    <div
+      className="w-full h-1.5 rounded-full overflow-hidden"
+      style={{ backgroundColor: trackColor }}
+    >
       <div
         className="h-full rounded-full transition-all duration-500"
-        style={{ width: `${pct}%`, backgroundColor: color }}
+        style={{ width: `${pct}%`, backgroundColor: fillColor }}
+      />
+    </div>
+  );
+}
+
+function AnimatedOverallBar({ pct }: { pct: number }) {
+  const [displayed, setDisplayed] = useState(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDisplayed(pct), 100);
+    return () => clearTimeout(t);
+  }, [pct]);
+
+  return (
+    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+      <div
+        className="h-full rounded-full transition-all duration-700"
+        style={{
+          width: `${displayed}%`,
+          background: "linear-gradient(to right, #0D5C63, #14808A)",
+        }}
       />
     </div>
   );
 }
 
 function Tile({ icon, title, pct, href, label }: TileData) {
-  const done = pct === 100;
+  const done       = pct === 100;
+  const inProgress = pct > 0 && pct < 100;
+
+  const containerClass = done
+    ? "bg-[#ECFDF5] border border-[#A7F3D0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+    : inProgress
+    ? "bg-[#E0F2F1] border border-[#B2DFDB] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+    : "bg-white border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-[#B2DFDB] transition-all duration-200";
+
+  const iconBg    = done ? "bg-[#059669]" : inProgress ? "bg-[#0D5C63]" : "bg-[#F0FAFA]";
+  const iconColor = done || inProgress ? "text-white" : "text-[#0D5C63]";
+
+  const pctClass  = done
+    ? "text-xl font-bold tabular-nums text-[#059669]"
+    : inProgress
+    ? "text-xl font-bold tabular-nums text-[#0D5C63]"
+    : "text-xl font-bold tabular-nums text-slate-400";
+
+  const trackColor = done ? "#A7F3D0" : inProgress ? "#B2DFDB" : "#F1F5F9";
+  const fillColor  = done ? "#059669" : inProgress ? "#0D5C63" : "#CBD5E1";
+
   return (
     <Link
       href={href}
-      className={`group relative bg-white rounded-2xl border p-5 flex flex-col gap-3
-                  shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5
-                  ${done ? "border-[#0D5C63]/30" : "border-[#B2DFDB]"}`}
+      className={`group relative rounded-2xl p-5 flex flex-col gap-3 ${containerClass}`}
     >
       {/* Completed badge */}
       {done && (
-        <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#0D5C63] flex items-center justify-center">
-          <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 8" fill="none">
+        <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#059669]/20 flex items-center justify-center">
+          <svg className="w-2.5 h-2.5 text-[#059669]" viewBox="0 0 10 8" fill="none">
             <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.8"
                   strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -194,33 +244,26 @@ function Tile({ icon, title, pct, href, label }: TileData) {
       )}
 
       {/* Icon */}
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center
-                       ${done ? "bg-[#0D5C63]/10" : "bg-[#F0FAFA]"}`}>
-        <span className={done ? "text-[#0D5C63]" : "text-slate-500"}>
-          {icon}
-        </span>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
+        <span className={iconColor}>{icon}</span>
       </div>
 
-      {/* Title + pct */}
-      <div className="flex items-end justify-between gap-1">
-        <p className="text-sm font-semibold text-slate-800 leading-tight">{title}</p>
-        <span className={`text-xs font-bold tabular-nums shrink-0
-                          ${done ? "text-[#0D5C63]" : "text-slate-400"}`}>
-          {pct}%
-        </span>
+      {/* Percentage */}
+      <span className={pctClass}>{pct}%</span>
+
+      {/* Title + subtitle */}
+      <div>
+        <p className="text-base font-semibold text-[#0F172A] leading-tight">{title}</p>
+        <p className="text-xs text-slate-500 mt-0.5">{label}</p>
       </div>
 
       {/* Progress bar */}
-      <ThinBar pct={pct} color={done ? "#0D5C63" : "#0D5C63"} />
-
-      {/* Sub-label */}
-      <p className="text-[11px] text-slate-400 leading-snug -mt-1">{label}</p>
+      <ThinBar pct={pct} trackColor={trackColor} fillColor={fillColor} />
 
       {/* Arrow on hover */}
       <ChevronRight
         size={14}
-        className="absolute bottom-4 right-4 text-slate-300 opacity-0 group-hover:opacity-100
-                   transition-opacity"
+        className="absolute bottom-4 right-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
       />
     </Link>
   );
@@ -260,7 +303,7 @@ export default function SetupPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-[#F0FAFA] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAF8F3] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
       </div>
     );
@@ -315,49 +358,49 @@ export default function SetupPage() {
 
   const tiles: TileData[] = [
     {
-      icon:  <FileCheck size={18} />,
+      icon:  <FileCheck size={20} />,
       title: "Licensing",
       pct:   licensingPct,
       href:  "/dashboard/licensing",
       label: `${licensingDone} of ${licensingTotal} steps`,
     },
     {
-      icon:  <LayoutGrid size={18} />,
+      icon:  <LayoutGrid size={20} />,
       title: "Systems Setup",
       pct:   syssetupPct,
       href:  "/dashboard/systems",
       label: `${syssetupDone} of ${SYSSETUP_TOTAL} platforms`,
     },
     {
-      icon:  <Mail size={18} />,
+      icon:  <Mail size={20} />,
       title: "Email Setup",
       pct:   emailPct,
       href:  "/dashboard/email-setup",
       label: emailPct === 100 ? "Complete" : emailPct > 0 ? "In progress" : "Not started",
     },
     {
-      icon:  <Tag size={18} />,
+      icon:  <Tag size={20} />,
       title: "Signs & Swag",
       pct:   swagPct,
       href:  "/dashboard/signs-swag",
       label: swagPct === 100 ? "Complete" : `${Math.round((swagPct / 100) * SWAG_KEYS.length)} of ${SWAG_KEYS.length} items`,
     },
     {
-      icon:  <Link2 size={18} />,
+      icon:  <Link2 size={20} />,
       title: "REAL Links",
       pct:   realLinksPct,
       href:  "/dashboard/real-links",
       label: realLinksPct === 100 ? "Complete" : realLinksPct === 50 ? "Bookmarked" : "Not started",
     },
     {
-      icon:  <Bell size={18} />,
+      icon:  <Bell size={20} />,
       title: "Notices",
       pct:   noticesPct,
       href:  "/dashboard/notices",
       label: totalNotices === 0 ? "No notices yet" : `${noticesDone} of ${totalNotices} read`,
     },
     {
-      icon:  <Target size={18} />,
+      icon:  <Target size={20} />,
       title: "First 90 Days",
       pct:   first90Pct,
       href:  "/dashboard/roadmap",
@@ -366,40 +409,40 @@ export default function SetupPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#F0FAFA]">
+    <div className="flex min-h-screen bg-[#FAF8F3]">
       <Sidebar role="realtor" />
 
       <main className="flex-1 p-8 overflow-auto">
 
-        {/* ── 1. Compact hero ───────────────────────────────────────────────── */}
-        <div className="flex items-end justify-between gap-4 mb-1">
+        {/* ── 1. Hero greeting ──────────────────────────────────────────────── */}
+        <div className="flex items-end justify-between gap-4 bg-gradient-to-br from-[#F0FAFA] via-[#FAF8F3] to-[#FFF8F0] rounded-2xl p-6 mb-1">
           <div>
             <p className="text-xs font-semibold text-[#0D5C63]/60 uppercase tracking-widest mb-1">
               Initial Setup
             </p>
-            <h1 className="text-2xl font-bold text-slate-900 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0F172A] leading-tight">
               {firstName ? `Welcome, ${firstName}.` : "Welcome."}
             </h1>
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-base text-slate-600 mt-2">
               Your onboarding dashboard — track every step before your first deal.
             </p>
           </div>
           <div className="text-right shrink-0">
             <p className="text-3xl font-bold text-[#0D5C63] tabular-nums leading-none">{overallPct}%</p>
-            <p className="text-xs text-slate-400 mt-0.5">overall</p>
+            <p className="text-xs text-slate-500 mt-0.5">overall</p>
           </div>
         </div>
 
         {/* ── 2. Overall progress bar ───────────────────────────────────────── */}
         <div className="mt-3 mb-8">
-          <ThinBar pct={overallPct} />
+          <AnimatedOverallBar pct={overallPct} />
         </div>
 
         {/* ── 3. UP NEXT card ───────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#FF6B35] to-[#C94A1A] p-4 md:p-5 mb-8 shadow-lg">
-          {/* Decorative rings */}
-          <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-          <div className="absolute -bottom-10 -right-4 w-28 h-28 rounded-full bg-white/5" />
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#FF6B35] via-[#FF7F50] to-[#FF8956] p-4 md:p-5 mb-8 shadow-lg shadow-orange-500/20">
+          {/* Decorative circles */}
+          <div className="absolute -top-12 -right-12 w-52 h-52 rounded-full bg-white/10" />
+          <div className="absolute -bottom-10 -left-6 w-40 h-40 rounded-full bg-white/5" />
 
           <div className="relative flex flex-col md:flex-row md:items-center md:gap-6">
             <div className="flex-1 min-w-0">
@@ -416,11 +459,11 @@ export default function SetupPage() {
             <div className="mt-3 md:mt-0 shrink-0">
               <Link
                 href={nextStep.href}
-                className="inline-flex items-center gap-2 bg-white text-[#C94A1A] text-sm font-semibold
+                className="inline-flex items-center bg-white text-[#FF6B35] text-sm font-semibold
                            px-5 py-2.5 rounded-xl shadow-sm hover:bg-orange-50 transition-colors"
               >
                 {nextStep.cta}
-                <ArrowRight size={15} />
+                <ArrowRight size={18} className="ml-2" />
               </Link>
             </div>
           </div>
@@ -428,47 +471,49 @@ export default function SetupPage() {
 
         {/* ── 4. Section header ─────────────────────────────────────────────── */}
         <div className="mb-4">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Your Onboarding</p>
+          <p className="text-xs tracking-widest text-slate-500 font-semibold uppercase">Your Onboarding</p>
+          <h2 className="text-2xl font-bold text-[#0F172A] mt-1">Jump to any area</h2>
+          <p className="text-sm text-slate-500 mt-1">Track your progress across every step</p>
         </div>
 
         {/* ── 5. 7-tile grid + ghost 8th ────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
           {tiles.map((tile) => (
             <Tile key={tile.title} {...tile} />
           ))}
 
           {/* Ghost 8th tile */}
-          <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50
-                          p-5 flex flex-col items-start gap-2 cursor-default">
+          <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-[#FAF8F3]/50
+                          p-5 flex flex-col items-start gap-2 cursor-default opacity-60">
             <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center">
               <Sparkles size={16} className="text-slate-300" />
             </div>
             <p className="text-sm font-semibold text-slate-300 mt-1">More coming</p>
-            <p className="text-[11px] text-slate-300">Additional modules on the way</p>
+            <p className="text-[11px] text-slate-400 italic">Additional modules on the way</p>
           </div>
 
         </div>
 
         {/* ── 6. Career path card ───────────────────────────────────────────── */}
-        <div className="mt-8 bg-white border border-[#B2DFDB] rounded-2xl p-6 shadow-sm
-                        flex items-center justify-between gap-6">
+        <div className="mt-12 bg-gradient-to-br from-[#FAF8F3] to-[#F0FAFA] border border-[#B2DFDB]
+                        rounded-2xl p-6 shadow-sm flex items-center justify-between gap-6">
           <div>
-            <p className="text-xs font-semibold text-[#0D5C63]/60 uppercase tracking-widest mb-1">
+            <p className="text-xs font-semibold text-[#0D5C63] uppercase tracking-widest mb-1">
               My Coaching
             </p>
-            <h3 className="text-base font-semibold text-slate-800 mb-1">Your career path is waiting.</h3>
-            <p className="text-sm text-slate-500">
+            <h3 className="text-xl font-bold text-[#0F172A] mt-1">Your career path is waiting.</h3>
+            <p className="text-sm text-slate-600 mt-1">
               Once you&apos;re set up, My Career Path takes you through Year 1 to Year 5+ as a Creativ agent.
             </p>
           </div>
           <Link
             href="/dashboard/roadmap"
-            className="shrink-0 inline-flex items-center gap-2 bg-[#0D5C63] hover:bg-[#0A4A50]
-                       text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
+            className="shrink-0 inline-flex items-center gap-2 bg-[#0D5C63] hover:bg-[#064E56]
+                       text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
           >
             Preview My Career Path
-            <ArrowRight size={14} />
+            <ArrowRight size={18} />
           </Link>
         </div>
 
