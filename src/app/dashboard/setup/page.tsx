@@ -212,20 +212,18 @@ function Tile({ icon, title, pct, href, accent, subtitle }: TileData) {
   const done       = pct === 100;
   const inProgress = pct > 0 && pct < 100;
 
-  // Icon container background
+  // Icon container background — always light tint unless complete
   const iconBgStyle = done
     ? { backgroundColor: "#10B981" }
-    : inProgress
-    ? { backgroundColor: accent }
-    : { backgroundColor: accent + "1A" }; // 10% opacity
+    : { backgroundColor: accent + "1A" };
 
   const iconContent = done
     ? <Check size={18} className="text-white" />
-    : <span style={{ color: done || inProgress ? "#fff" : accent }}>{icon}</span>;
+    : <span style={{ color: accent }}>{icon}</span>;
 
   const cardStyle: React.CSSProperties = done
     ? { backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0" }
-    : { backgroundColor: accent + "0A", border: "1px solid " + accent + "22" };
+    : { backgroundColor: accent + "1A", border: "1px solid " + accent + "22" };
 
   return (
     <Link
