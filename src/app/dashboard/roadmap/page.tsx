@@ -38,48 +38,11 @@ const ROADMAP_DATA: RoadmapLevel[] = [
   {
     id:       "new",
     label:    "New Realtor\u00ae",
-    subtitle: "Year 0–1 · Your first 90 days and beyond",
+    subtitle: "Year 0–1 · Build your foundation",
     badges:   ["Getting Started", "Building Momentum", "Halfway There", "Almost Done", "Level Complete"],
     groups: [
-      // ── Section A: First 90 Days ─────────────────────────────────────────
       {
-        name:           "Phase 1 — Foundation (Days 1–30)",
-        sectionDivider: "Your First 90 Days",
-        phase:          { label: "Foundation · Days 1–30", color: "green" },
-        items: [
-          item("Complete your NBREA membership application"),
-          item("Submit your FCNB licence application under Creativ Realty"),
-          item("Log in to Matrix (MLS) and explore your first listing search"),
-          item("Set up Transaction Desk and read the Intro to Transaction Desk guide"),
-          item("Add your sphere of influence to your CRM (minimum 50 contacts)"),
-        ],
-      },
-      {
-        name:  "Phase 2 — Outreach (Days 31–60)",
-        phase: { label: "Outreach · Days 31–60", color: "blue" },
-        items: [
-          item("Contact every person in your sphere by phone or in-person"),
-          item("Preview 10 active listings in your target area"),
-          item("Complete 3 comparative market analyses (CMAs)"),
-          item("Attend an open house as an observer and take notes"),
-          item("Book your first buyer or seller consultation"),
-        ],
-      },
-      {
-        name:  "Phase 3 — Growth (Days 61–90)",
-        phase: { label: "Growth · Days 61–90", color: "orange" },
-        items: [
-          item("Write your first offer or take your first listing"),
-          item("Post your agent introduction on all social channels"),
-          item("Set up your Google Business Profile"),
-          item("Choose your niche and complete the niche checklist"),
-          item("Write your 90-day business plan and share it with your coach"),
-        ],
-      },
-      // ── Section B: Build Your Foundation ────────────────────────────────
-      {
-        name:           "Brand & online presence",
-        sectionDivider: "Build Your Foundation",
+        name: "Brand & online presence",
         items: [
           item("Get professional headshots"),
           item("Write a compelling personal bio"),
@@ -108,6 +71,10 @@ const ROADMAP_DATA: RoadmapLevel[] = [
           item("Open a dedicated business bank account"),
           item("Set up basic expense tracking (income vs. costs)"),
           item("Send your \"I am now a Realtor\" announcement to your sphere"),
+          item("Complete your NBREA membership application"),
+          item("Submit your FCNB licence application under Creativ Realty"),
+          item("Log in to Matrix (MLS) and explore your first listing search"),
+          item("Set up Transaction Desk and read the Intro to Transaction Desk guide"),
         ],
       },
       {
@@ -122,6 +89,7 @@ const ROADMAP_DATA: RoadmapLevel[] = [
           item("Build a vendor contact list (lenders, inspectors, notaries, lawyers)"),
           item("Shadow an experienced agent on a listing appointment"),
           item("Shadow an experienced agent on a buyer showing"),
+          item("Choose your niche and complete the niche checklist"),
         ],
       },
       {
