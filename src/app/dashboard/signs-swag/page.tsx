@@ -36,6 +36,8 @@ const BRAND_GUIDELINES_URL =
 const BRAND_PORTAL_URL =
   "https://onereal.widencollective.com/portals/tcbndxev/BrandElements";
 
+const ORANGE = "#F97316";
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function addKey(arr: string[], key: string): string[] {
@@ -50,18 +52,21 @@ function toggleKey(arr: string[], key: string, on: boolean): string[] {
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function ProgressBar({ done, total }: { done: number; total: number }) {
+function ProgressCard({ done, total }: { done: number; total: number }) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   return (
-    <div className="bg-white border border-[#B2DFDB] rounded-xl p-4 mb-8">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-[#0D5C63]">{done} of {total} steps complete</span>
-        <span className="text-sm font-bold text-[#0D5C63]">{pct}%</span>
+    <div
+      className="shadow-soft-lg rounded-xl p-6 mb-8"
+      style={{ backgroundColor: "#F973161A", border: "1px solid #F9731622" }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-[#334155]">{done} of {total} steps complete</span>
+        <span className="text-sm font-bold tabular-nums" style={{ color: ORANGE }}>{pct}%</span>
       </div>
-      <div className="w-full h-2 bg-[#B2DFDB] rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-white/60 rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#0D5C63] rounded-full transition-all duration-500"
-          style={{ width: `${pct}%` }}
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${pct}%`, backgroundColor: ORANGE }}
         />
       </div>
     </div>
@@ -89,16 +94,21 @@ interface MaterialCardProps {
 function MaterialCard({
   icon, title, priority, desc, vendors, itemKey, checked, onToggle, saving,
 }: MaterialCardProps) {
+  const iconColor = checked ? "#10B981" : ORANGE;
+  const iconBg    = checked ? "#10B9811A" : "#F973161A";
+
   return (
     <div
-      className={`flex flex-col bg-white rounded-xl p-6 border shadow-sm hover:shadow-md transition-shadow
-                  ${checked
-                    ? "border-l-4 border-l-[#0D5C63] border-[#B2DFDB] bg-gradient-to-br from-white to-[#F0FAFA]/40"
-                    : "border-[#B2DFDB]"}`}
+      className="flex flex-col rounded-xl p-5 shadow-soft transition-shadow hover:shadow-soft-hover"
+      style={
+        checked
+          ? { backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0" }
+          : { backgroundColor: "#F973161A", border: "1px solid #F9731622" }
+      }
     >
       {/* Header row */}
       <div className="flex items-start justify-between gap-2 mb-3">
-        <div className="bg-[#F0FAFA] rounded-lg p-2.5 shrink-0">
+        <div className="rounded-lg p-2.5 shrink-0" style={{ backgroundColor: iconBg, color: iconColor }}>
           {icon}
         </div>
         <span
@@ -113,12 +123,12 @@ function MaterialCard({
         </span>
       </div>
 
-      <h3 className="text-lg font-semibold text-slate-800 mb-2">{title}</h3>
-      <p className="text-sm text-slate-600 leading-relaxed flex-1">{desc}</p>
+      <h3 className="text-base font-semibold text-[#0F172A] mb-2">{title}</h3>
+      <p className="text-sm text-[#334155] leading-relaxed flex-1">{desc}</p>
 
       {/* Vendors */}
       <div className="mt-4">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+        <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-2">
           Where to order
         </p>
         <ul className="space-y-1.5">
@@ -129,20 +139,21 @@ function MaterialCard({
                   href={v.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-[#0D5C63] hover:underline"
+                  className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
+                  style={{ color: ORANGE }}
                 >
                   {v.label}
                   <ExternalLink size={12} className="shrink-0" />
                 </a>
                 {v.note && (
-                  <span className="text-xs text-slate-400 ml-1">— {v.note}</span>
+                  <span className="text-xs text-[#64748B] ml-1">— {v.note}</span>
                 )}
               </li>
             ) : (
-              <li key={i} className="text-sm text-slate-500">
+              <li key={i} className="text-sm text-[#64748B]">
                 {v.label}
                 {v.note && (
-                  <span className="text-slate-400 ml-1">— {v.note}</span>
+                  <span className="text-[#94A3B8] ml-1">— {v.note}</span>
                 )}
               </li>
             )
@@ -150,7 +161,7 @@ function MaterialCard({
         </ul>
       </div>
 
-      {/* Checkbox */}
+      {/* Toggle button */}
       <button
         onClick={() => onToggle(itemKey, !checked)}
         disabled={saving}
@@ -199,7 +210,6 @@ export default function SignsSwagPage() {
   async function saveCompleted(next: string[]) {
     if (!realtor) return;
     setSaving(true);
-    // Optimistic update
     setCompleted(next);
     try {
       const updated = await updateRealtor(realtor.id, { roadmap_completed: next });
@@ -207,7 +217,6 @@ export default function SignsSwagPage() {
       setCompleted(updated.roadmap_completed ?? next);
     } catch (e) {
       console.error("Failed to save", e);
-      // Revert
       setCompleted(realtor.roadmap_completed ?? []);
     } finally {
       setSaving(false);
@@ -239,7 +248,7 @@ export default function SignsSwagPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="flex min-h-screen bg-[#F0FAFA] items-center justify-center">
+      <div className="flex min-h-screen bg-[#FAF8F3] items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
       </div>
     );
@@ -250,7 +259,7 @@ export default function SignsSwagPage() {
 
   const materials: Omit<MaterialCardProps, "checked" | "onToggle" | "saving">[] = [
     {
-      icon:     <CreditCard className="w-5 h-5 text-[#0D5C63]" />,
+      icon:     <CreditCard className="w-5 h-5" />,
       title:    "Business Cards",
       priority: "ESSENTIAL",
       desc:     "Your single most important print piece. Hand these out at every showing, every open house, every coffee. Use a Real-approved design from the Brand Portal.",
@@ -261,7 +270,7 @@ export default function SignsSwagPage() {
       itemKey:  KEY_BIZ_CARDS,
     },
     {
-      icon:     <Home className="w-5 h-5 text-[#0D5C63]" />,
+      icon:     <Home className="w-5 h-5" />,
       title:    "Listing Signs",
       priority: "ESSENTIAL",
       desc:     "The 24\" × 32\" sign that goes in every seller's front yard. Most new realtors order 6–12 to start. You'll also need stakes or frames — usually easier to get from a local sign shop.",
@@ -272,7 +281,7 @@ export default function SignsSwagPage() {
       itemKey:  KEY_LISTING,
     },
     {
-      icon:     <MapPin className="w-5 h-5 text-[#0D5C63]" />,
+      icon:     <MapPin className="w-5 h-5" />,
       title:    "Open House Signs",
       priority: "ESSENTIAL",
       desc:     "Directional signs for busy corners ('OPEN HOUSE →') and a main sign for the property. You'll need 4–6 directional signs to catch traffic from multiple routes.",
@@ -283,7 +292,7 @@ export default function SignsSwagPage() {
       itemKey:  KEY_OPEN_HOUSE,
     },
     {
-      icon:     <IdCard className="w-5 h-5 text-[#0D5C63]" />,
+      icon:     <IdCard className="w-5 h-5" />,
       title:    "Name Badge",
       priority: "OPTIONAL",
       desc:     "For open houses, networking events, and office meet-and-greets. Magnetic backs are worth the small upgrade — your blazer will thank you.",
@@ -294,7 +303,7 @@ export default function SignsSwagPage() {
       itemKey:  KEY_NAME_BADGE,
     },
     {
-      icon:     <Sparkles className="w-5 h-5 text-[#0D5C63]" />,
+      icon:     <Sparkles className="w-5 h-5" />,
       title:    "Digital Marketing Templates",
       priority: "RECOMMENDED",
       desc:     "Social posts, feature sheets, email signatures, just-listed graphics. Pull these from the Brand Portal and customize in Canva. One checkbox covers 'I've grabbed what I need.'",
@@ -307,42 +316,59 @@ export default function SignsSwagPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#F0FAFA]">
+    <div className="flex min-h-screen bg-[#FAF8F3]">
       <Sidebar role="realtor" />
 
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 px-8 pt-8 pb-12 overflow-auto">
 
-        {/* ── Page header ───────────────────────────────────────────────────── */}
-        <div className="mb-6">
-          <p className="text-xs text-slate-500 font-semibold tracking-wider uppercase">Initial Setup</p>
-          <h1 className="text-3xl font-bold text-[#0D5C63] mt-2">Signs &amp; Swag</h1>
-          <p className="text-slate-600 mt-2 max-w-3xl">
+        {/* ── Page header — no card treatment ──────────────────────────────── */}
+        <div className="pb-4 mb-2">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">
+            Initial Setup
+          </p>
+          <h1 className="text-xl font-semibold text-[#0F172A]">Signs &amp; Swag</h1>
+          <p className="text-sm text-slate-500 mt-0.5">
             Your brand in the real world. Listing signs, business cards, open house materials — designed the Real way, printed by vendors you choose.
           </p>
         </div>
 
-        <ProgressBar done={completedCount} total={6} />
+        {/* ── Progress card ─────────────────────────────────────────────────── */}
+        <ProgressCard done={completedCount} total={6} />
 
-        {/* ── Brand Hub Cards ───────────────────────────────────────────────── */}
+        {/* ── Brand Hub section label ───────────────────────────────────────── */}
         <div className="mb-4">
-          <p className="text-xs font-semibold text-[#FF6B35] uppercase tracking-wider">Start Here</p>
-          <h2 className="text-xl font-semibold text-slate-800 mt-1">Your REAL brand toolkit</h2>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-xs tracking-widest text-slate-500 font-semibold uppercase">Start Here</p>
+          <h2 className="text-xl font-semibold text-[#0F172A] mt-1">Your REAL brand toolkit</h2>
+          <p className="text-sm text-slate-500 mt-1">
             Before you order anything, download what you need from Real Brokerage&apos;s brand portals. Every piece of your marketing — from signs to social — uses these assets.
           </p>
         </div>
 
+        {/* ── Brand Hub Cards ───────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
 
           {/* Brand Guidelines */}
-          <div className="bg-white border border-[#B2DFDB] border-l-4 border-l-[#0D5C63] rounded-xl p-6 shadow-sm flex flex-col gap-4">
+          <div
+            className="shadow-soft rounded-xl p-5 flex flex-col gap-4 transition-shadow hover:shadow-soft-hover"
+            style={
+              guidelinesOk
+                ? { backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0" }
+                : { backgroundColor: "#F973161A", border: "1px solid #F9731622" }
+            }
+          >
             <div className="flex items-start gap-3">
-              <div className="bg-[#F0FAFA] p-3 rounded-lg shrink-0">
-                <BookOpen className="w-6 h-6 text-[#0D5C63]" />
+              <div
+                className="p-3 rounded-lg shrink-0"
+                style={{
+                  backgroundColor: guidelinesOk ? "#10B9811A" : "#F973161A",
+                  color: guidelinesOk ? "#10B981" : ORANGE,
+                }}
+              >
+                <BookOpen className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-slate-800">Brand Guidelines</h3>
-                <p className="text-sm text-slate-600 mt-1">
+                <h3 className="text-base font-semibold text-[#0F172A]">Brand Guidelines</h3>
+                <p className="text-sm text-[#334155] mt-1">
                   The rules of the road. Logo usage, approved colors, fonts, spacing, and what you can and can&apos;t do with the Real brand on your materials.
                 </p>
               </div>
@@ -361,12 +387,12 @@ export default function SignsSwagPage() {
               <button
                 onClick={handleGuidelinesToggle}
                 disabled={saving}
-                className="flex items-center gap-2 self-start text-sm text-slate-600 hover:text-slate-800 transition-colors"
+                className="flex items-center gap-2 self-start text-sm text-[#334155] hover:text-[#0F172A] transition-colors"
               >
                 <span
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors
                               ${guidelinesOk
-                                ? "bg-[#0D5C63] border-[#0D5C63]"
+                                ? "bg-[#10B981] border-[#10B981]"
                                 : "border-slate-300 hover:border-[#0D5C63]"}`}
                 >
                   {guidelinesOk && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
@@ -377,14 +403,20 @@ export default function SignsSwagPage() {
           </div>
 
           {/* Brand Elements Portal */}
-          <div className="bg-white border border-[#B2DFDB] border-l-4 border-l-[#0D5C63] rounded-xl p-6 shadow-sm flex flex-col gap-4">
+          <div
+            className="shadow-soft rounded-xl p-5 flex flex-col gap-4 transition-shadow hover:shadow-soft-hover"
+            style={{ backgroundColor: "#F973161A", border: "1px solid #F9731622" }}
+          >
             <div className="flex items-start gap-3">
-              <div className="bg-[#F0FAFA] p-3 rounded-lg shrink-0">
-                <Download className="w-6 h-6 text-[#0D5C63]" />
+              <div
+                className="p-3 rounded-lg shrink-0"
+                style={{ backgroundColor: "#F973161A", color: ORANGE }}
+              >
+                <Download className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-slate-800">Brand Elements Portal</h3>
-                <p className="text-sm text-slate-600 mt-1">
+                <h3 className="text-base font-semibold text-[#0F172A]">Brand Elements Portal</h3>
+                <p className="text-sm text-[#334155] mt-1">
                   Logos, templates, photography, graphics. Download everything you need — already designed, already on-brand, ready to hand to a printer or drop into Canva.
                 </p>
               </div>
@@ -403,15 +435,16 @@ export default function SignsSwagPage() {
 
         </div>
 
-        {/* ── Materials Grid ────────────────────────────────────────────────── */}
+        {/* ── Materials section label ───────────────────────────────────────── */}
         <div className="mb-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Your Materials</p>
-          <h2 className="text-xl font-semibold text-slate-800 mt-1">What you&apos;ll need</h2>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-xs tracking-widest text-slate-500 font-semibold uppercase">Your Materials</p>
+          <h2 className="text-xl font-semibold text-[#0F172A] mt-1">What you&apos;ll need</h2>
+          <p className="text-sm text-slate-500 mt-1">
             The essentials for your first 90 days. Check items off as you order them.
           </p>
         </div>
 
+        {/* ── Materials Grid ────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
           {materials.map((m) => (
             <MaterialCard
@@ -425,17 +458,20 @@ export default function SignsSwagPage() {
         </div>
 
         {/* ── DIY Rules Placeholder ─────────────────────────────────────────── */}
-        <div className="bg-white border border-[#B2DFDB] border-l-4 border-l-[#0D5C63] rounded-xl p-6 shadow-sm mb-12">
+        <div
+          className="shadow-soft rounded-xl p-5 mb-12"
+          style={{ backgroundColor: "#FAFAF7", border: "1px solid #E7E5DE" }}
+        >
           <div className="flex items-start gap-4">
-            <div className="bg-[#F0FAFA] p-2 rounded-lg shrink-0">
-              <ShieldCheck className="w-6 h-6 text-[#0D5C63]" />
+            <div className="p-2 rounded-lg shrink-0 bg-slate-100">
+              <ShieldCheck className="w-6 h-6 text-[#64748B]" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-semibold text-slate-800 mb-2">Designing your own materials</h2>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <h2 className="text-xl font-semibold text-[#0F172A] mb-2">Designing your own materials</h2>
+              <p className="text-sm text-[#334155] leading-relaxed">
                 Planning to design something yourself instead of using the Real templates? Real Brokerage has specific rules about logo usage, color, fonts, required disclosures, and what needs pre-approval before printing.
               </p>
-              <p className="text-sm text-slate-500 italic mt-2 leading-relaxed">
+              <p className="text-sm text-[#64748B] italic mt-2 leading-relaxed">
                 Detailed DIY guidelines coming soon — Jacques will add these directly from the Real brand team. For now, use the Brand Guidelines link above as your source of truth.
               </p>
             </div>
@@ -444,13 +480,15 @@ export default function SignsSwagPage() {
 
         {/* ── Completion Card ───────────────────────────────────────────────── */}
         <div
-          className={`bg-white rounded-xl p-6 shadow-sm border border-l-4 transition-colors mb-12
-                      ${isCompleted
-                        ? "border-[#B2DFDB] border-l-[#0D5C63]"
-                        : "border-[#B2DFDB] border-l-[#FF6B35]"}`}
+          className="shadow-soft rounded-xl p-6 mb-12"
+          style={
+            isCompleted
+              ? { backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0" }
+              : { backgroundColor: "#F973161A", border: "1px solid #F9731622" }
+          }
         >
-          <h2 className="text-xl font-semibold text-slate-800 mb-2">Mark Signs &amp; Swag complete</h2>
-          <p className="text-sm text-slate-500 mb-5">
+          <h2 className="text-xl font-semibold text-[#0F172A] mb-2">Mark Signs &amp; Swag complete</h2>
+          <p className="text-sm text-[#64748B] mb-5">
             <strong>{completedCount} of 6</strong> steps complete.
             {" "}Brand guidelines reviewed: <strong>{guidelinesOk ? "Yes" : "Not yet"}</strong>.
           </p>
@@ -473,7 +511,7 @@ export default function SignsSwagPage() {
                 {saving ? "Saving…" : "Complete Signs & Swag"}
               </button>
               {!canComplete && (
-                <p className="text-xs text-slate-400 mt-2">
+                <p className="text-xs text-[#64748B] mt-2">
                   Requires: Business Cards ordered, at least one other item ordered, and Brand Guidelines reviewed.
                 </p>
               )}
