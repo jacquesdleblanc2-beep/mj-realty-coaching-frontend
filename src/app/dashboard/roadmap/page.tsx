@@ -487,7 +487,7 @@ export default function RoadmapPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-slate-900">My Roadmap</h1>
           <p className="text-sm text-[#0A4A50] mt-1">
-            {LEVEL_LABELS[userLevel] ?? "New Realtor\u00ae"} \u00b7 {activeLevel.subtitle}
+            {LEVEL_LABELS[userLevel] ?? "New Realtor\u00ae"} · {activeLevel.subtitle}
           </p>
         </div>
 
