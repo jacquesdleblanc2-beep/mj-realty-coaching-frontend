@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { getRealtorByEmail, patchRoadmapItem, Realtor } from "@/lib/api";
 
@@ -64,20 +65,25 @@ const TRANSFER_STEPS: LicensingStep[] = [
   },
 ];
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+const BLUE = "#3B82F6";
 
-function ProgressBar({ done, total }: { done: number; total: number }) {
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
+function ProgressCard({ done, total }: { done: number; total: number }) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   return (
-    <div className="bg-white border border-[#B2DFDB] rounded-xl p-4 mb-6">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-[#0D5C63]">{done} of {total} steps completed</span>
-        <span className="text-sm font-semibold text-[#0D5C63]">{pct}%</span>
+    <div
+      className="shadow-soft-lg rounded-xl p-6 mb-6"
+      style={{ backgroundColor: "#3B82F61A", border: "1px solid #3B82F622" }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-[#334155]">{done} of {total} steps completed</span>
+        <span className="text-sm font-bold tabular-nums" style={{ color: BLUE }}>{pct}%</span>
       </div>
-      <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-white/60 rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#0D5C63] rounded-full transition-all duration-300"
-          style={{ width: `${pct}%` }}
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${pct}%`, backgroundColor: BLUE }}
         />
       </div>
     </div>
@@ -93,21 +99,31 @@ function StepCard({
   onToggle: (key: string, val: boolean) => void;
 }) {
   return (
-    <div className={`bg-white border rounded-xl p-5 flex gap-4 transition-colors
-                    ${checked ? "border-[#B2DFDB] opacity-80" : "border-[#B2DFDB]"}`}>
-      <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold mt-0.5
-                      ${checked ? "bg-[#0D5C63] text-white" : "bg-teal-100 text-[#0D5C63]"}`}>
+    <div
+      className="shadow-soft rounded-xl p-5 flex gap-4 transition-shadow hover:shadow-soft-hover"
+      style={
+        checked
+          ? { backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0" }
+          : { backgroundColor: "#3B82F61A", border: "1px solid #3B82F622" }
+      }
+    >
+      {/* Step number / check bubble */}
+      <div
+        className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold mt-0.5"
+        style={
+          checked
+            ? { backgroundColor: "#10B981", color: "#fff" }
+            : { backgroundColor: "#3B82F61A", color: BLUE }
+        }
+      >
         {checked
-          ? <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
-              <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="2"
-                    strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+          ? <Check size={16} />
           : index + 1}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
-          <h3 className={`text-sm font-semibold ${checked ? "line-through text-teal-400" : "text-[#0D5C63]"}`}>
+          <h3 className={`text-sm font-semibold ${checked ? "line-through text-[#64748B]" : "text-[#0F172A]"}`}>
             {step.title}
           </h3>
           <button
@@ -122,14 +138,15 @@ function StepCard({
           </button>
         </div>
 
-        <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{step.description}</p>
+        <p className="text-sm text-[#334155] mt-1.5 leading-relaxed">{step.description}</p>
 
         {step.link && (
           <a
             href={step.link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-[#0D5C63] font-medium mt-2 hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-medium mt-2 hover:underline"
+            style={{ color: BLUE }}
           >
             → {step.link.label}
           </a>
@@ -195,7 +212,7 @@ export default function LicensingPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-[#F0FAFA] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAF8F3] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
       </div>
     );
@@ -205,47 +222,54 @@ export default function LicensingPage() {
   const doneCount = steps.filter((s) => completed.has(s.key)).length;
 
   return (
-    <div className="flex min-h-screen bg-[#F0FAFA]">
+    <div className="flex min-h-screen bg-[#FAF8F3]">
       <Sidebar role="realtor" />
 
-      <main className="flex-1 p-8 overflow-auto">
-        <div className="max-w-2xl">
+      <main className="flex-1 px-8 pt-8 pb-12 overflow-auto">
 
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-slate-900">Licensing</h1>
-            <p className="text-sm text-[#0A4A50] mt-1">Complete each step to get your licence under Creativ Realty.</p>
-          </div>
-
-          <div className="flex gap-2 mb-6">
-            {(["new", "transfer"] as Tab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-5 py-2 rounded-xl text-sm font-medium border transition-colors
-                  ${tab === t
-                    ? "bg-[#0D5C63] border-[#0D5C63] text-white"
-                    : "bg-white border-[#B2DFDB] text-[#0D5C63] hover:border-[#0D5C63]"}`}
-              >
-                {t === "new" ? "New Licence" : "Transferring from Another Brokerage"}
-              </button>
-            ))}
-          </div>
-
-          <ProgressBar done={doneCount} total={steps.length} />
-
-          <div className="space-y-3">
-            {steps.map((step, i) => (
-              <StepCard
-                key={step.key}
-                step={step}
-                index={i}
-                checked={completed.has(step.key)}
-                onToggle={toggle}
-              />
-            ))}
-          </div>
-
+        {/* ── Page header — no card treatment ──────────────────────────────── */}
+        <div className="pb-4 mb-2">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">
+            Initial Setup
+          </p>
+          <h1 className="text-xl font-semibold text-[#0F172A]">Licensing</h1>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Complete each step to get your licence under Creativ Realty.
+          </p>
         </div>
+
+        {/* ── Tab selector ─────────────────────────────────────────────────── */}
+        <div className="flex gap-2 mb-6">
+          {(["new", "transfer"] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-5 py-2 rounded-xl text-sm font-medium border transition-colors
+                ${tab === t
+                  ? "bg-[#0D5C63] border-[#0D5C63] text-white"
+                  : "bg-white border-[#B2DFDB] text-[#0D5C63] hover:border-[#0D5C63]"}`}
+            >
+              {t === "new" ? "New Licence" : "Transferring from Another Brokerage"}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Progress card ─────────────────────────────────────────────────── */}
+        <ProgressCard done={doneCount} total={steps.length} />
+
+        {/* ── Step cards ────────────────────────────────────────────────────── */}
+        <div className="space-y-3">
+          {steps.map((step, i) => (
+            <StepCard
+              key={step.key}
+              step={step}
+              index={i}
+              checked={completed.has(step.key)}
+              onToggle={toggle}
+            />
+          ))}
+        </div>
+
       </main>
     </div>
   );
