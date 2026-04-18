@@ -292,7 +292,6 @@ export default function SystemPage() {
   const [tasks,         setTasks]         = useState<Task[]>([]);
   const [activePreset,  setActivePreset]  = useState<string>("");
   const [weeklyHours,   setWeeklyHours]   = useState<number>(30);
-  const [showCoach,     setShowCoach]     = useState(false);
   const [showAddForm,   setShowAddForm]   = useState(false);
   const [newCategory,   setNewCategory]   = useState<string>("Custom");
   const [newTaskName,   setNewTaskName]   = useState("");
@@ -500,47 +499,6 @@ export default function SystemPage() {
               Build the weekly accountability system that fits how you want to work.
             </p>
           </div>
-
-          {/* ── Coach tasks (collapsed) ───────────────────────────────────────── */}
-          {coachTasks.length > 0 && (
-            <div className="bg-slate-50 border border-slate-200 rounded-xl mb-8">
-              <button
-                type="button"
-                onClick={() => setShowCoach((v) => !v)}
-                className="w-full flex items-center justify-between px-5 py-3.5 text-left"
-              >
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Tasks set by your coach — for reference only
-                </span>
-                <svg
-                  className={`w-4 h-4 text-slate-400 transition-transform ${showCoach ? "rotate-180" : ""}`}
-                  viewBox="0 0 16 16" fill="none"
-                >
-                  <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5"
-                        strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-              {showCoach && (
-                <div className="border-t border-slate-200">
-                  <table className="w-full text-sm">
-                    <tbody className="divide-y divide-slate-100">
-                      {coachTasks.map((t, i) => (
-                        <tr key={i} className="text-slate-400">
-                          <td className="px-5 py-2.5">{t.task}</td>
-                          <td className="px-3 py-2.5 whitespace-nowrap">
-                            <span className="text-xs bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">
-                              {t.input_type === "count" ? `Count ×${t.target ?? ""}` : "Checkbox"}
-                            </span>
-                          </td>
-                          <td className="px-5 py-2.5 text-right text-xs text-slate-400">{t.points}pt</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* ── System selector ───────────────────────────────────────────────── */}
           <div className="mb-6">

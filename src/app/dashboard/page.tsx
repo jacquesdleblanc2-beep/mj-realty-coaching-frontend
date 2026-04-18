@@ -883,8 +883,6 @@ function QuickNumbers({ realtor, onUpdate }: { realtor: Realtor; onUpdate: (r: R
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
-type DashTab = "overview" | "myweek";
-
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -894,7 +892,6 @@ export default function DashboardPage() {
   const [allProgress, setAllProgress] = useState<WeekProgress[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState<string | null>(null);
-  const [tab,         setTab]         = useState<DashTab>("overview");
   const [coachName,   setCoachName]   = useState<string>("Your coach");
 
   const weekLabel = currentWeekLabel();
@@ -961,9 +958,6 @@ export default function DashboardPage() {
   const PLACEHOLDER  = "Work hard be kind";
   const hasGoals     = realtor?.martin_goals && realtor.martin_goals.trim() !== PLACEHOLDER;
 
-  const undoneTasks  = progress?.tasks.filter((t) => t.enabled && !t.done).length ?? 0;
-  const allTasksDone = progress !== null && undoneTasks === 0 && (progress.tasks.length > 0);
-
   // Build score_history with current week for the insights chart
   const historyWithCurrent: ScoreHistoryEntry[] = (() => {
     if (!progress) return history;
@@ -1007,116 +1001,40 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* ── Tab bar ───────────────────────────────────────────────────────── */}
-        <div className="bg-white border border-teal-200 rounded-xl px-5 mb-6">
-          <div className="flex gap-6 border-b border-teal-100">
-            {(["overview", "myweek"] as DashTab[]).map((t) => {
-              const isActive = tab === t;
-              const label    = t === "overview" ? "Overview" : "My Week";
-              return (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className={`py-3 text-sm font-medium transition-colors border-b-2 -mb-px flex items-center gap-2 ${
-                    isActive
-                      ? "text-teal-800 border-teal-600"
-                      : "text-teal-400 border-transparent hover:text-teal-600"
-                  }`}
-                >
-                  {label}
-                  {t === "myweek" && !loading && (
-                    allTasksDone ? (
-                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full
-                                       bg-green-500 text-white text-[10px] font-bold">✓</span>
-                    ) : undoneTasks > 0 ? (
-                      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5
-                                       rounded-full bg-orange-500 text-white text-[11px] font-bold leading-none">
-                        {undoneTasks}
-                      </span>
-                    ) : null
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        {/* ── OVERVIEW ──────────────────────────────────────────────────────── */}
+        <StatsBar livePercent={livePercent} lastWeekPct={lastWeekPct}
+                  avgPct={avgPct} streakWeeks={streakWeeks} loading={loading} />
 
-        {/* ── OVERVIEW TAB ──────────────────────────────────────────────────── */}
-        {tab === "overview" && (
-          <>
-            <StatsBar livePercent={livePercent} lastWeekPct={lastWeekPct}
-                      avgPct={avgPct} streakWeeks={streakWeeks} loading={loading} />
-
-            {!loading && realtor && (
-              <TodaysFocus realtorId={realtor.id} weekLabel={weekLabel} progress={progress} />
-            )}
-
-            {/* Martin's banner */}
-            <div className="bg-teal-600 rounded-xl px-5 py-3 mb-6">
-              <p className="text-teal-200 text-[11px] uppercase tracking-wider font-medium mb-1.5">
-                {`${coachName}'s goals for you this week`}
-              </p>
-              {hasGoals ? (
-                <ul className="space-y-0.5">
-                  {realtor!.martin_goals.split("\n").filter(Boolean).map((line, i) => (
-                    <li key={i} className="text-white text-sm flex gap-2">
-                      <span className="text-teal-300">•</span> {line}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-teal-300 text-sm italic">
-                  {`${coachName} hasn't set goals for this week yet. Check back Monday morning.`}
-                </p>
-              )}
-            </div>
-
-            {!loading && realtor && (
-              <GoalsTracker realtor={realtor} onUpdate={setRealtor} />
-            )}
-
-            {!loading && (
-              <InsightChart history={historyWithCurrent} allProgress={allProgress} />
-            )}
-          </>
+        {!loading && realtor && (
+          <TodaysFocus realtorId={realtor.id} weekLabel={weekLabel} progress={progress} />
         )}
 
-        {/* ── MY WEEK TAB ───────────────────────────────────────────────────── */}
-        {tab === "myweek" && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h2 className="text-sm font-semibold text-teal-800">Weekly Strategy</h2>
-                <p className="text-[11px] text-teal-400 mt-0.5">
-                  Enter daily counts for count tasks. Toggle yes/no tasks when complete.
-                </p>
-              </div>
-              {progress && (
-                <span className="text-xs text-teal-500 font-medium">
-                  {Math.round(progress.score)} / {progress.total_possible} pts
-                </span>
-              )}
-            </div>
+        {/* Coach goals banner */}
+        <div className="bg-teal-600 rounded-xl px-5 py-3 mb-6">
+          <p className="text-teal-200 text-[11px] uppercase tracking-wider font-medium mb-1.5">
+            {`${coachName}'s goals for you this week`}
+          </p>
+          {hasGoals ? (
+            <ul className="space-y-0.5">
+              {realtor!.martin_goals.split("\n").filter(Boolean).map((line, i) => (
+                <li key={i} className="text-white text-sm flex gap-2">
+                  <span className="text-teal-300">•</span> {line}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-teal-300 text-sm italic">
+              {`${coachName} hasn't set goals for this week yet. Check back Monday morning.`}
+            </p>
+          )}
+        </div>
 
-            {loading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10" />)}
-              </div>
-            ) : !progress || progress.tasks.length === 0 ? (
-              <p className="text-teal-400 text-sm">No tasks configured yet.</p>
-            ) : (
-              <>
-                <MyWeekTable
-                  progress={progress}
-                  realtorId={realtor?.id ?? ""}
-                  weekLabel={weekLabel}
-                  onUpdate={handleProgressUpdate}
-                />
+        {!loading && realtor && (
+          <GoalsTracker realtor={realtor} onUpdate={setRealtor} />
+        )}
 
-                {realtor && <QuickNumbers realtor={realtor} onUpdate={setRealtor} />}
-              </>
-            )}
-          </div>
+        {!loading && (
+          <InsightChart history={historyWithCurrent} allProgress={allProgress} />
         )}
 
       </main>
