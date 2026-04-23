@@ -332,6 +332,55 @@ export default function SignsSwagPage() {
           </p>
         </div>
 
+        {/* ── Express Imaging announcement ──────────────────────────────────── */}
+        <div
+          className="shadow-soft-lg rounded-xl p-6 mb-6"
+          style={{ backgroundColor: "#F0FAFA", border: "2px solid #0D5C63" }}
+        >
+          <div className="flex items-start gap-3 mb-3">
+            <span className="text-2xl">🎉</span>
+            <div>
+              <h3 className="text-xl font-semibold text-[#0D5C63] mb-1">
+                Signs &amp; Swag Are Now Available
+              </h3>
+              <p className="text-sm text-gray-600">
+                Through our partnered platform for Real Brokerage agents
+              </p>
+            </div>
+          </div>
+
+          <p className="text-gray-800 mb-3">
+            Everything is in place for you to order your own signs and swag. Our partner,{" "}
+            <span className="font-semibold">Express Imaging</span>, has set up a dedicated platform
+            with pre-approved templates at discounted prices — making it easier than ever to get started.
+            Don&apos;t want to use their templates? There are options for that as well.
+          </p>
+
+          <div className="bg-white rounded-lg p-4 mb-4 border border-[#B2DFDB]">
+            <p className="font-semibold text-[#0D5C63] mb-2">How to Place Your Order</p>
+            <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+              <li>Browse available products (signs, marketing materials, swag, and more)</li>
+              <li>Submit and pay for your order through the platform</li>
+              <li>Pick up your completed order once it&apos;s ready</li>
+            </ul>
+          </div>
+
+          <p className="text-sm text-gray-600 mb-4">
+            You can order on your own, but for ease and consistency we recommend ordering through
+            Express Imaging directly.
+          </p>
+
+          <a
+            href="https://expressimaging.wixstudio.com/real-broker"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-[#FF6B35] hover:bg-[#e85a2a] text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+          >
+            Order on Express Imaging
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </div>
+
         {/* ── Progress card ─────────────────────────────────────────────────── */}
         <ProgressCard done={completedCount} total={6} />
 
