@@ -14,46 +14,6 @@ export interface InitialSetupItem {
   consequence: string | null;
 }
 
-export interface InitialSetupTab {
-  id: string;
-  label: string;
-  emoji: string;
-  description: string;
-  status: "active" | "coming_soon";
-}
-
-export const INITIAL_SETUP_TABS: InitialSetupTab[] = [
-  {
-    id: "board-emails",
-    label: "Emails from Board",
-    emoji: "📧",
-    description:
-      "In your first 4 days you'll receive 6 emails from the Board. Each one has a job. Check them off as you handle them.",
-    status: "active",
-  },
-  {
-    id: "rezen-training",
-    label: "reZEN & Real",
-    emoji: "🏢",
-    description: "Get set up on Real Brokerage's tools.",
-    status: "coming_soon",
-  },
-  {
-    id: "marketing-setup",
-    label: "Marketing",
-    emoji: "📣",
-    description: "Business cards, signs, social, headshots.",
-    status: "coming_soon",
-  },
-  {
-    id: "tools-setup",
-    label: "Tools & Tech",
-    emoji: "🛠️",
-    description: "Matrix, Touchbase, Supra, WEBForms — get them all configured.",
-    status: "coming_soon",
-  },
-];
-
 export const INITIAL_SETUP_ITEMS: InitialSetupItem[] = [
   {
     id: "board_email_1_membership_received",
@@ -167,12 +127,6 @@ export const INITIAL_SETUP_ITEMS: InitialSetupItem[] = [
       "If the link expires you may not receive your login credentials and will need to contact memberservices@nbrealestateboard.com to reset.",
   },
 ];
-
-export function getActiveTabItems(tabId: string): InitialSetupItem[] {
-  return INITIAL_SETUP_ITEMS
-    .filter((item) => item.tabId === tabId)
-    .sort((a, b) => a.order - b.order);
-}
 
 export function getTotalItemCount(): number {
   return INITIAL_SETUP_ITEMS.length;

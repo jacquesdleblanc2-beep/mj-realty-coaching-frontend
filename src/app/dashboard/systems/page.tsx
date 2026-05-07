@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Monitor, Smartphone, Check } from "lucide-react";
+import { Monitor, Smartphone, Check, X } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { getRealtorByEmail, patchRoadmapItem, Realtor } from "@/lib/api";
 
@@ -128,9 +128,10 @@ export default function SystemsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [realtor,   setRealtor]   = useState<Realtor | null>(null);
-  const [completed, setCompleted] = useState<Set<string>>(new Set());
-  const [loading,   setLoading]   = useState(true);
+  const [realtor,    setRealtor]    = useState<Realtor | null>(null);
+  const [completed,  setCompleted]  = useState<Set<string>>(new Set());
+  const [loading,    setLoading]    = useState(true);
+  const [snbHelpOpen, setSnbHelpOpen] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/");
@@ -247,16 +248,28 @@ export default function SystemsPage() {
                   → {p.url}
                 </a>
 
-                {/* Toggle button */}
-                <button
-                  onClick={() => toggle(p.key, !done)}
-                  className={`mt-auto text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors self-start
-                              ${done
-                                ? "border-teal-200 text-teal-400 hover:bg-red-50 hover:border-red-200 hover:text-red-500"
-                                : "border-[#0D5C63] text-[#0D5C63] hover:bg-[#0D5C63] hover:text-white"}`}
-                >
-                  {done ? "✓ Set up" : "Mark as set up"}
-                </button>
+                {/* Action buttons */}
+                <div className="mt-auto flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => toggle(p.key, !done)}
+                    className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors
+                                ${done
+                                  ? "border-teal-200 text-teal-400 hover:bg-red-50 hover:border-red-200 hover:text-red-500"
+                                  : "border-[#0D5C63] text-[#0D5C63] hover:bg-[#0D5C63] hover:text-white"}`}
+                  >
+                    {done ? "✓ Set up" : "Mark as set up"}
+                  </button>
+
+                  {p.key === "syssetup_snb_planet" && (
+                    <button
+                      onClick={() => setSnbHelpOpen(true)}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[#FF6B35] text-[#FF6B35]
+                                 hover:bg-[#FF6B35] hover:text-white transition-colors"
+                    >
+                      How to sign up
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -319,6 +332,143 @@ export default function SystemsPage() {
         </div>
 
       </main>
+
+      {snbHelpOpen && (
+        <SnbPlanetHelpModal onClose={() => setSnbHelpOpen(false)} />
+      )}
+    </div>
+  );
+}
+
+// ── SNB PLANET signup-help modal ───────────────────────────────────────────────
+
+function SnbPlanetHelpModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="snb-help-title"
+    >
+      <div
+        className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 px-6 py-5 border-b border-slate-200">
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">
+              SNB PLANET
+            </p>
+            <h2 id="snb-help-title" className="text-lg font-semibold text-[#0F172A]">
+              How to sign up
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="shrink-0 rounded-md p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 overflow-y-auto text-sm text-[#334155] space-y-4">
+          <p>To create a new account, please complete the following forms:</p>
+
+          <ol className="space-y-2 list-decimal list-outside pl-5">
+            <li>
+              <span className="font-semibold text-[#0F172A]">Client Registration</span>
+              <span className="text-slate-600">
+                {" "}— when prompted to choose which program you want, hit the checkmark
+                box. You do not have a Client #.
+              </span>
+            </li>
+            <li>
+              <span className="font-semibold text-[#0F172A]">Financial Officer Registration</span>
+              <span className="text-slate-600">
+                {" "}— include a void cheque or a pre-authorized debit from your financial
+                institution.
+              </span>
+            </li>
+            <li>
+              <span className="font-semibold text-[#0F172A]">Client Administrator Registration</span>
+            </li>
+            <li>
+              <span className="font-semibold text-[#0F172A]">Individual User Registration</span>
+              <span className="text-slate-600">
+                {" "}— when prompted to choose which program you want, hit the checkmark
+                box. You do not have a Client #.
+              </span>
+            </li>
+          </ol>
+
+          <div className="rounded-lg border border-[#FF6B35]/30 bg-[#FFF4ED] p-4">
+            <p className="text-xs font-semibold text-[#FF6B35] uppercase tracking-widest mb-2">
+              Part 4 — Charge Model
+            </p>
+            <p className="mb-3">
+              On Part 4, identify under <span className="font-semibold">Charge Model Option</span>{" "}
+              what type of subscription you require:
+            </p>
+            <ul className="space-y-2">
+              <li className="flex gap-2">
+                <span className="font-semibold text-[#0F172A] shrink-0">a.</span>
+                <span>
+                  <span className="font-semibold text-[#0F172A]">Transactional</span> — $10/month
+                  minimum fee, plus $1 for every click of the mouse while searching in
+                  &ldquo;Real Property Information&rdquo; only.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-semibold text-[#0F172A] shrink-0">b.</span>
+                <span>
+                  <span className="font-semibold text-[#0F172A]">Browser (Subscription)</span> —
+                  $65/month. Provides unlimited searching in &ldquo;Real Property Information&rdquo;
+                  only.
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+            <p className="font-semibold text-[#0F172A] mb-1">Note</p>
+            <p>
+              Regardless of the subscription you choose, there are additional fees for reports
+              and half-day historical searches that are above and beyond the monthly fees
+              (Real Property Information &ndash; Services and Fees).
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-[#0D5C63]/20 bg-[#F0FAFA] p-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">
+              Submit forms to
+            </p>
+            <p>
+              Send completed forms and void cheque to Finance at{" "}
+              <a
+                href="mailto:SNBHQFinServAR@SNB.CA"
+                className="font-semibold text-[#0D5C63] hover:underline"
+              >
+                SNBHQFinServAR@SNB.CA
+              </a>
+            </p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-slate-200 flex justify-end">
+          <button
+            onClick={onClose}
+            className="text-sm font-medium px-4 py-2 rounded-lg bg-[#0D5C63] text-white
+                       hover:bg-[#0A4A50] transition-colors"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
