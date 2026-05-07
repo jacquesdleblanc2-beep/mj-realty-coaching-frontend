@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Monitor, Smartphone, Check, X } from "lucide-react";
+import { Monitor, Smartphone, Check, X, ExternalLink } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { getRealtorByEmail, patchRoadmapItem, Realtor } from "@/lib/api";
 
@@ -380,30 +380,46 @@ function SnbPlanetHelpModal({ onClose }: { onClose: () => void }) {
 
           <ol className="space-y-2 list-decimal list-outside pl-5">
             <li>
-              <span className="font-semibold text-[#0F172A]">Client Registration</span>
+              <SnbFormLink
+                href="https://www.pxw1.snb.ca/snb7001/b/1000/CSS-FOL-SNB-SN-0020b.pdf"
+                label="Client Registration"
+              />
               <span className="text-slate-600">
                 {" "}— when prompted to choose which program you want, hit the checkmark
                 box. You do not have a Client #.
               </span>
             </li>
             <li>
-              <span className="font-semibold text-[#0F172A]">Financial Officer Registration</span>
+              <SnbFormLink
+                href="https://www.pxw1.snb.ca/snb7001/b/1000/CSS-FOL-SNB-SN-0021b.pdf"
+                label="Financial Officer Registration"
+              />
               <span className="text-slate-600">
                 {" "}— include a void cheque or a pre-authorized debit from your financial
                 institution.
               </span>
             </li>
             <li>
-              <span className="font-semibold text-[#0F172A]">Client Administrator Registration</span>
+              <SnbFormLink
+                href="https://www.pxw1.snb.ca/snb7001/b/1000/CSS-FOL-SNB-SN-0022b.pdf"
+                label="Client Administrator Registration"
+              />
             </li>
             <li>
-              <span className="font-semibold text-[#0F172A]">Individual User Registration</span>
+              <SnbFormLink
+                href="https://www.pxw1.snb.ca/snb7001/b/1000/CSS-FOL-SNB-SN-0023b.pdf"
+                label="Individual User Registration"
+              />
               <span className="text-slate-600">
                 {" "}— when prompted to choose which program you want, hit the checkmark
                 box. You do not have a Client #.
               </span>
             </li>
           </ol>
+
+          <p className="text-xs text-slate-500">
+            Each form opens as a PDF on snb.ca in a new tab.
+          </p>
 
           <div className="rounded-lg border border-[#FF6B35]/30 bg-[#FFF4ED] p-4">
             <p className="text-xs font-semibold text-[#FF6B35] uppercase tracking-widest mb-2">
@@ -470,5 +486,19 @@ function SnbPlanetHelpModal({ onClose }: { onClose: () => void }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function SnbFormLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 font-semibold text-[#0D5C63] hover:underline"
+    >
+      {label}
+      <ExternalLink size={12} className="shrink-0" aria-hidden="true" />
+    </a>
   );
 }
